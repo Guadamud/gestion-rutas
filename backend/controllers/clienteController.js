@@ -455,7 +455,7 @@ exports.getTransaccionesCompra = async (req, res) => {
         tipo: 'solicitud_compra'
       },
       order: [['createdAt', 'DESC']],
-      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'fecha', 'solicitadoPor', 'conductorId']
+      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'solicitadoPor', 'conductorId']
     });
 
     console.log(`📊 Cliente ID ${id}: ${cliente.nombres} ${cliente.apellidos}`);
