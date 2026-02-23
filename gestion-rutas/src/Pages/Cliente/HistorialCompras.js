@@ -38,6 +38,8 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { professionalColors } from '../../utils/professionalColors';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const HistorialCompras = () => {
   const { user } = useAuth();
   const [compras, setCompras] = useState([]);
@@ -109,14 +111,14 @@ const HistorialCompras = () => {
       setLoading(true);
       
       // Primero obtener el cliente del usuario
-      const clienteResponse = await axios.get(`http://localhost:5000/api/clientes/user/${user.id}`, {
+      const clienteResponse = await axios.get(`${API_URL}/api/clientes/user/${user.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       
       const cliente = clienteResponse.data;
       
       // Obtener las transacciones de compra del cliente
-      const responseCompras = await axios.get(`http://localhost:5000/api/clientes/${cliente.id}/transacciones-compra`, {
+      const responseCompras = await axios.get(`${API_URL}/api/clientes/${cliente.id}/transacciones-compra`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       
@@ -124,7 +126,7 @@ const HistorialCompras = () => {
       setCompras(transacciones);
 
       // Obtener las recargas de los conductores
-      const responseRecargas = await axios.get(`http://localhost:5000/api/clientes/${cliente.id}/recargas-conductores`, {
+      const responseRecargas = await axios.get(`${API_URL}/api/clientes/${cliente.id}/recargas-conductores`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       

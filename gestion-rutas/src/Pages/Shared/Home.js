@@ -50,6 +50,8 @@ import img15Octubre from '../../assets/buses/cooperativa-15-octubre.jpg';
 import img24Mayo from '../../assets/buses/24 de mayo.jpeg';
 import imgSanJacinto from '../../assets/buses/San Jacinto Cotranscascol.jpg';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const Home = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -64,7 +66,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCooperativas = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/cooperativas/publicas');
+        const response = await fetch(`${API_URL}/api/cooperativas/publicas`);
         if (response.ok) {
           const data = await response.json();
           console.log('Cooperativas cargadas desde API:', data); // Debug
