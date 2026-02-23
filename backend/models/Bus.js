@@ -14,6 +14,14 @@ const Bus = sequelize.define("Bus", {
     allowNull: true,
     comment: 'Indica quién desactivó el bus (solo se usa cuando estado=inactivo)'
   },
+  cooperativaId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: "cooperativas",
+      key: "id"
+    }
+  },
   usuarioId: {
     type: DataTypes.INTEGER,
     allowNull: false,

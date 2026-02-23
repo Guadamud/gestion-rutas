@@ -65,6 +65,14 @@ LimiteRutaBus.belongsTo(Bus, { foreignKey: "busId" });
 Ruta.hasMany(LimiteRutaBus, { foreignKey: "rutaId", onDelete: "CASCADE" });
 LimiteRutaBus.belongsTo(Ruta, { foreignKey: "rutaId" });
 
+// Cooperativa - Cliente (1:N)
+Cooperativa.hasMany(Cliente, { foreignKey: "cooperativaId", onDelete: "SET NULL" });
+Cliente.belongsTo(Cooperativa, { foreignKey: "cooperativaId" });
+
+// Cooperativa - Bus (1:N)
+Cooperativa.hasMany(Bus, { foreignKey: "cooperativaId", onDelete: "SET NULL" });
+Bus.belongsTo(Cooperativa, { foreignKey: "cooperativaId" });
+
 module.exports = {
   sequelize,
   User,

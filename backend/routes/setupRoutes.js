@@ -127,11 +127,68 @@ router.post("/agregar-cooperativa-id", async (req, res) => {
   }
 });
 
+// Ruta TEMPORAL para asignar cooperativa a clientes y buses existentes
+// ⚠️ ELIMINAR DESPUÉS DE USAR
+router.post("/asignar-cooperativa-existentes", async (req, res) => {
+  try {
+    const Cooperativa = require("../models/Cooperativa");
+    
+    console.log("🚀 Iniciando asignación de cooperativa a registros existentes...");
+
+    // 1. Obtener o crear cooperativa "Trans Esmeraldas"
+    let cooperativa = await Cooperativa.findOne({ where: { nombre: "Trans Esmeraldas" } });
+    if (!cooperativa) {
+      cooperativa = await Cooperativa.create({
+        nombre: "Trans Esmeraldas",
+        descripcion: "Cooperativa de transporte Trans Esmeraldas",
+        estado: "activo"
+      });
+      console.log(`✅ Cooperativa creada: ${cooperativa.nombre} (ID: ${cooperativa.id})`);
+    } else {
+      console.log(`✅ Cooperativa existente: ${cooperativa.nombre} (ID: ${cooperativa.id})`);
+    }
+
+    // 2. Actualizar todos los clientes sin cooperativa
+    const [clientesActualizados] = await Cliente.update(
+      { cooperativaId: cooperativa.id },
+      { where: { cooperativaId: null } }
+    );
+    console.log(`✅ ${clientesActualizados} clientes actualizados con cooperativaId`);
+
+    // 3. Actualizar todos los buses sin cooperativa
+    const [busesActualizados] = await Bus.update(
+      { cooperativaId: cooperativa.id },
+      { where: { cooperativaId: null } }
+    );
+    console.log(`✅ ${busesActualizados} buses actualizados con cooperativaId`);
+
+    res.status(200).json({
+      message: "✅ Cooperativa asignada exitosamente a registros existentes",
+      cooperativa: {
+        id: cooperativa.id,
+        nombre: cooperativa.nombre
+      },
+      actualizados: {
+        clientes: clientesActualizados,
+        buses: busesActualizados
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error al asignar cooperativa:", error);
+    res.status(500).json({ 
+      message: "Error al asignar cooperativa", 
+      error: error.message 
+    });
+  }
+});
+
 // Ruta TEMPORAL para cargar datos de ejemplo
 // ⚠️ ELIMINAR DESPUÉS DE USAR
 router.post("/cargar-datos-ejemplo", async (req, res) => {
   try {
     const datosEjemplo = require("../scripts/datosEjemplo");
+    const Cooperativa = require("../models/Cooperativa");
     const resultados = {
       clientes: { creados: 0, errores: 0 },
       conductores: { creados: 0, errores: 0 },
@@ -139,6 +196,19 @@ router.post("/cargar-datos-ejemplo", async (req, res) => {
     };
 
     console.log("🚀 Iniciando carga de datos de ejemplo...");
+
+    // 0. Obtener o crear cooperativa "Trans Esmeraldas"
+    let cooperativa = await Cooperativa.findOne({ where: { nombre: "Trans Esmeraldas" } });
+    if (!cooperativa) {
+      cooperativa = await Cooperativa.create({
+        nombre: "Trans Esmeraldas",
+        descripcion: "Cooperativa de transporte Trans Esmeraldas",
+        estado: "activo"
+      });
+      console.log(`✅ Cooperativa creada: ${cooperativa.nombre} (ID: ${cooperativa.id})`);
+    } else {
+      console.log(`✅ Cooperativa existente: ${cooperativa.nombre} (ID: ${cooperativa.id})`);
+    }
 
     // 1. Crear Users y Clientes
     for (let i = 0; i < datosEjemplo.clientes.length; i++) {
@@ -167,14 +237,15 @@ router.post("/cargar-datos-ejemplo", async (req, res) => {
           tema_preferido: "grisProfesional"
         });
 
-        // Crear registro en tabla Cliente
+        // Crear registro en tabla Cliente CON cooperativaId
         await Cliente.create({
           userId: nuevoUser.id,
           nombres: clienteData.nombres,
           apellidos: clienteData.apellidos,
           cedula: clienteData.cedula,
           telefono: clienteData.celular,
-          email: clienteData.email
+          email: clienteData.email,
+          cooperativaId: cooperativa.id
         });
 
         resultados.clientes.creados++;
@@ -241,6 +312,7 @@ router.post("/cargar-datos-ejemplo", async (req, res) => {
             modelo: busData.modelo,
             capacidad: busData.capacidad,
             usuarioId: clienteAsociado.id,
+            cooperativaId: cooperativa.id,
             estado: "activo"
           });
 

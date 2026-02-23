@@ -52,6 +52,14 @@ const Cliente = sequelize.define("Cliente", {
     type: DataTypes.ENUM("activo", "inactivo"),
     defaultValue: "activo"
   },
+  cooperativaId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: "cooperativas",
+      key: "id"
+    }
+  },
   fechaRegistro: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
