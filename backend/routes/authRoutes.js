@@ -19,9 +19,12 @@ router.post("/register", async (req, res) => {
     rol
   } = req.body;
 
+  console.log('📝 Intento de registro:', { email, rol, nombres, apellidos });
+
   try {
     // Verificar si ya existe algún usuario en la base de datos
     const totalUsers = await User.count();
+    console.log('📊 Total de usuarios en DB:', totalUsers);
     
     // Si no hay usuarios, el primero será admin automáticamente
     let rolFinal = rol;
@@ -33,22 +36,26 @@ router.post("/register", async (req, res) => {
     // Verificar si el email ya existe
     const existingUserByEmail = await User.findOne({ where: { email } });
     if (existingUserByEmail) {
+      console.log('❌ Email ya registrado:', email);
       return res.status(400).json({ message: "El correo electrónico ya está registrado" });
     }
 
     // Verificar si la cédula ya existe
     const existingUserByCedula = await User.findOne({ where: { cedula } });
     if (existingUserByCedula) {
+      console.log('❌ Cédula ya registrada:', cedula);
       return res.status(400).json({ message: "La cédula ya está registrada" });
     }
 
     // Verificar si el celular ya existe
     const existingUserByCelular = await User.findOne({ where: { celular } });
     if (existingUserByCelular) {
+      console.log('❌ Celular ya registrado:', celular);
       return res.status(400).json({ message: "El número de celular ya está registrado" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log('🔒 Contraseña hasheada correctamente');
 
     // Asignar tema predeterminado según rol
     const temasPorRol = {
@@ -61,6 +68,8 @@ router.post("/register", async (req, res) => {
     
     const tema_preferido = temasPorRol[rolFinal] || 'azulProfesional';
 
+    console.log('💾 Intentando crear usuario con datos:', { nombres, apellidos, cedula, celular, email, rol: rolFinal });
+
     const newUser = await User.create({
       nombres,
       apellidos,
@@ -71,6 +80,8 @@ router.post("/register", async (req, res) => {
       rol: rolFinal,
       tema_preferido,
     });
+
+    console.log('✅ Usuario creado exitosamente ID:', newUser.id, 'Email:', newUser.email, 'Rol:', newUser.rol);
 
     // Devolver el usuario creado (sin la contraseña)
     const userResponse = {
@@ -88,8 +99,12 @@ router.post("/register", async (req, res) => {
       user: userResponse
     });
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: "Error al registrar usuario" });
+    console.error('❌ ERROR EN REGISTRO:', error.message);
+    console.error('❌ Stack:', error.stack);
+    res.status(400).json({ 
+      message: "Error al registrar usuario",
+      error: error.message 
+    });
   }
 });
 
