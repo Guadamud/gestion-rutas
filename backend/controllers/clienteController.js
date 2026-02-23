@@ -1,5 +1,6 @@
 ﻿const Cliente = require("../models/Cliente");
 const User = require("../models/User");
+const Transaccion = require("../models/Transaccion");
 const cacheService = require("../services/cacheService");
 const { paginatedResponse, getSequelizePaginationOptions } = require("../middlewares/paginationMiddleware");
 
@@ -438,61 +439,32 @@ exports.procesarSolicitud = async (req, res) => {
 exports.getTransaccionesCompra = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Op } = require('sequelize');
-    
-    // Buscar el cliente
-    const cliente = await Cliente.findByPk(id, {
-      attributes: ['id', 'nombres', 'apellidos', 'saldo']
-    });
-    if (!cliente) {
-      return res.status(404).json({ message: "Cliente no encontrado" });
-    }
 
-    // Obtener TODAS las solicitudes de compra del cliente (todos los estados, sin filtros adicionales)
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
         tipo: 'solicitud_compra'
       },
-      order: [['createdAt', 'DESC']],
-      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'solicitadoPor', 'conductorId']
+      order: [['createdAt', 'DESC']]
     });
 
-    console.log(`📊 Cliente ID ${id}: ${cliente.nombres} ${cliente.apellidos}`);
-    console.log(`📊 Total transacciones de compra encontradas: ${transacciones.length}`);
-    
-    // Si no hay transacciones, mostrar estadísticas de debug
-    if (transacciones.length === 0) {
-      const todasTransacciones = await Transaccion.findAll({
-        where: { clienteId: id },
-        attributes: ['tipo', 'estado', 'solicitadoPor']
-      });
-      console.log(`📊 Total de todas las transacciones del cliente: ${todasTransacciones.length}`);
-      console.log('📊 Desglose:');
-      console.log('   - solicitud_compra pendientes:', todasTransacciones.filter(t => t.tipo === 'solicitud_compra' && t.estado === 'pendiente').length);
-      console.log('   - solicitud_compra aprobadas:', todasTransacciones.filter(t => t.tipo === 'solicitud_compra' && t.estado === 'aprobada').length);
-      console.log('   - Otros tipos:', todasTransacciones.filter(t => t.tipo !== 'solicitud_compra').length);
-    }
+    console.log(`📊 getTransaccionesCompra clienteId=${id}: ${transacciones.length} registros`);
 
-    // Formatear la respuesta
-    const transaccionesFormateadas = transacciones.map(t => ({
+    const resultado = transacciones.map(t => ({
       id: t.id,
       clienteId: t.clienteId,
       monto: t.monto,
       metodoPago: t.metodoPago,
       descripcion: t.descripcion,
       estado: t.estado,
-      fecha: t.fecha || t.createdAt,
+      fecha: t.createdAt,
       solicitadoPor: t.solicitadoPor
     }));
 
-    res.json(transaccionesFormateadas);
+    res.json(resultado);
   } catch (error) {
-    console.error("Error al obtener transacciones de compra:", error);
-    res.status(500).json({ 
-      message: "Error al obtener transacciones",
-      error: error.message 
-    });
+    console.error("❌ getTransaccionesCompra error:", error);
+    res.status(500).json({ message: "Error al obtener transacciones", error: error.message, stack: error.stack });
   }
 };
 
