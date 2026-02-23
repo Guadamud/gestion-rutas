@@ -73,6 +73,60 @@ router.post("/crear-primer-admin", async (req, res) => {
   }
 });
 
+// Ruta TEMPORAL para agregar campo cooperativaId a clientes y buses
+// ⚠️ ELIMINAR DESPUÉS DE USAR
+router.post("/agregar-cooperativa-id", async (req, res) => {
+  try {
+    const { sequelize } = require("../config/database");
+    
+    console.log("🚀 Iniciando migración: Agregar cooperativaId a clientes y buses...");
+
+    // 1. Agregar columna cooperativaId a tabla clientes
+    console.log("📝 Agregando cooperativaId a tabla clientes...");
+    await sequelize.query(`
+      ALTER TABLE clientes 
+      ADD COLUMN IF NOT EXISTS "cooperativaId" INTEGER
+      REFERENCES cooperativas(id) ON DELETE SET NULL;
+    `);
+    
+    // 2. Agregar columna cooperativaId a tabla buses  
+    console.log("📝 Agregando cooperativaId a tabla buses...");
+    await sequelize.query(`
+      ALTER TABLE buses 
+      ADD COLUMN IF NOT EXISTS "cooperativaId" INTEGER
+      REFERENCES cooperativas(id) ON DELETE SET NULL;
+    `);
+    
+    // 3. Crear índices para mejorar búsquedas
+    console.log("📝 Creando índices...");
+    await sequelize.query(`
+      CREATE INDEX IF NOT EXISTS idx_clientes_cooperativa 
+      ON clientes("cooperativaId");
+    `);
+    await sequelize.query(`
+      CREATE INDEX IF NOT EXISTS idx_buses_cooperativa 
+      ON buses("cooperativaId");
+    `);
+    
+    console.log("✅ Migración completada exitosamente!");
+
+    res.status(200).json({
+      message: "✅ Campo cooperativaId agregado exitosamente a clientes y buses",
+      detalles: {
+        tablas: ["clientes", "buses"],
+        indices: ["idx_clientes_cooperativa", "idx_buses_cooperativa"]
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error en la migración:", error);
+    res.status(500).json({ 
+      message: "Error al agregar cooperativaId", 
+      error: error.message 
+    });
+  }
+});
+
 // Ruta TEMPORAL para cargar datos de ejemplo
 // ⚠️ ELIMINAR DESPUÉS DE USAR
 router.post("/cargar-datos-ejemplo", async (req, res) => {
