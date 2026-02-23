@@ -428,8 +428,8 @@ exports.getTransaccionesCompra = async (req, res) => {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
-    // Obtener todas las transacciones de compra de saldo (aprobadas)
-    // Incluir las que fueron solicitadas por el cliente O las que no tienen conductorId
+    // Obtener todas las transacciones de compra de saldo del cliente
+    // Solo mostrar las aprobadas donde el cliente es quien solicitó (no las de conductores)
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
@@ -437,15 +437,31 @@ exports.getTransaccionesCompra = async (req, res) => {
         estado: 'aprobada',
         [Op.or]: [
           { solicitadoPor: 'cliente' },
-          { solicitadoPor: null },
-          { conductorId: null }
+          { 
+            solicitadoPor: null,
+            conductorId: null
+          }
         ]
       },
       order: [['createdAt', 'DESC']],
       attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'solicitadoPor', 'conductorId']
     });
 
-    console.log(`📊 Transacciones de compra para cliente ${id}:`, transacciones.length);
+    console.log(`📊 Cliente ID ${id}: ${cliente.nombres} ${cliente.apellidos}`);
+    console.log(`📊 Total transacciones de compra encontradas: ${transacciones.length}`);
+    
+    // Si no hay transacciones, mostrar estadísticas de debug
+    if (transacciones.length === 0) {
+      const todasTransacciones = await Transaccion.findAll({
+        where: { clienteId: id },
+        attributes: ['tipo', 'estado', 'solicitadoPor']
+      });
+      console.log(`📊 Total de todas las transacciones del cliente: ${todasTransacciones.length}`);
+      console.log('📊 Desglose:');
+      console.log('   - solicitud_compra pendientes:', todasTransacciones.filter(t => t.tipo === 'solicitud_compra' && t.estado === 'pendiente').length);
+      console.log('   - solicitud_compra aprobadas:', todasTransacciones.filter(t => t.tipo === 'solicitud_compra' && t.estado === 'aprobada').length);
+      console.log('   - Otros tipos:', todasTransacciones.filter(t => t.tipo !== 'solicitud_compra').length);
+    }
 
     // Formatear la respuesta
     const transaccionesFormateadas = transacciones.map(t => ({
@@ -495,12 +511,16 @@ exports.getRecargasConductores = async (req, res) => {
     const conductorIds = conductores.map(c => c.id);
 
     // Obtener todas las recargas realizadas a estos conductores (tipo: 'recarga')
+    // Estado puede ser 'aprobada' o 'completada' dependiendo de cómo se hizo la recarga
+    const { Op } = require('sequelize');
     const recargas = await Transaccion.findAll({
       where: {
         clienteId: id,
         conductorId: conductorIds,
         tipo: 'recarga',
-        estado: 'aprobada'
+        estado: {
+          [Op.in]: ['aprobada', 'completada']
+        }
       },
       order: [['createdAt', 'DESC']],
       include: [{
@@ -509,7 +529,7 @@ exports.getRecargasConductores = async (req, res) => {
       }]
     });
 
-    console.log(`📊 Recargas a conductores para cliente ${id}:`, recargas.length);
+    console.log(`📊 Cliente ID ${id}: Recargas a conductores encontradas: ${recargas.length}`);
 
     // Formatear la respuesta
     const recargasFormateadas = recargas.map(r => ({
