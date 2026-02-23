@@ -16,6 +16,7 @@ const cierreCajaRoutes = require("./routes/cierreCajaRoutes");
 const mantenimientoRoutes = require("./routes/mantenimientoRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const limitesRutaBusRoutes = require("./routes/limitesRutaBusRoutes");
+const setupRoutes = require("./routes/setupRoutes");
 const { iniciarServicioLimpieza } = require("./services/limpiezaAutomaticaService");
 const { iniciarServicioLimpiezaClaves } = require("./services/limpiezaClavesTemporales");
 
@@ -63,6 +64,7 @@ app.use(cookieLoggingMiddleware);
 app.use(paginationMiddleware);
 
 // Rutas
+app.use("/api/setup", setupRoutes); // Ruta temporal para setup inicial
 app.use("/auth", authRoutes);
 app.use("/api/frecuencias", frecuenciaRoutes);
 app.use("/api/rutas", rutaRoutes);
