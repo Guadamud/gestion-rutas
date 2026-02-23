@@ -309,6 +309,7 @@ exports.updateSaldoConductor = async (req, res) => {
       
       // Invalidar caché del cliente
       cacheService.del(`cliente_${conductor.clienteId}`);
+      cacheService.del(`cliente_user_${cliente.userId}`);
       cacheService.delPattern('clientes_*');
     }
     
