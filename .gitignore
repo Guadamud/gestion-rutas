@@ -1,0 +1,100 @@
+# Dependencias
+node_modules/
+package-lock.json
+
+# Variables de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Build de producción
+build/
+dist/
+*.tsbuildinfo
+
+# IDEs y Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Archivos temporales de Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Coverage y testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache/
+
+# Archivos de respaldo
+*.backup
+*.bak
+*.old
+*.orig
+
+# Archivos de base de datos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Scripts temporales (ya ejecutados)
+fix-*.js
+remove-*.js
+actualizar-*.js
+verificar-*.js
+consultar-*.js
+limpiar-*.js
+listar-*.js
+
+# Documentación temporal de desarrollo
+GUIA_*.md
+EJEMPLO_*.md
+EJEMPLO_*.jsx
+RESUMEN_*.md
+IMPLEMENTACION_*.md
+SISTEMA_*.md
+PASOS_*.md
+GUION_*.md
+INSTRUCCIONES_*.md
+LEER_*.md
+MEJORAS_*.md
+CAMBIOS_*.md
+FIX_*.md
+SECCION_*.md
+PLANTILLAS_*.md
+ANALISIS_*.md
+CLAVE_*.md
+*.txt
+
+# Archivos batch de instalación/debug
+instalar_*.bat
+verificar_*.bat
+reiniciar_*.bat
+iniciar_debug*.bat
+
+# Manuales HTML generados
+*.html
+
+# Archivos de Office temporales
+~$*.docx
+~$*.xlsx
+~$*.pptx
