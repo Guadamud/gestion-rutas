@@ -258,6 +258,7 @@ const createFrecuencia = async (req, res) => {
     // Invalidar caché de frecuencias
     cacheService.delPattern('frecuencias_*');
     cacheService.del(`conductor_${conductorId}`);
+    cacheService.del(`conductor_usuario_${conductor.usuarioId}`); // Invalidar también por usuarioId
     
     res.status(201).json(nueva);
   } catch (error) {
