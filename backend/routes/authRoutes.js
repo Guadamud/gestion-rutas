@@ -22,18 +22,17 @@ router.post("/register", async (req, res) => {
   console.log('📝 Intento de registro:', { email, nombres, apellidos });
 
   try {
-    // Verificar si ya existe algún usuario en la base de datos
-    const totalUsers = await User.count();
-    console.log('📊 Total de usuarios en DB:', totalUsers);
+    // Verificar si ya existe un administrador
+    const adminExists = await User.findOne({ where: { rol: 'admin' } });
     
     // SEGURIDAD: El registro público SOLO puede crear clientes
-    // La única excepción es el primer usuario que será admin automáticamente
-    let rolFinal = 'cliente';
-    if (totalUsers === 0) {
-      rolFinal = 'admin';
-      console.log('🎯 Primer usuario del sistema - Asignando rol de administrador');
+    // Ya existe un admin, todos los nuevos usuarios serán clientes
+    const rolFinal = 'cliente';
+    
+    if (adminExists) {
+      console.log('👤 Ya existe admin - Nuevo usuario será cliente');
     } else {
-      console.log('👤 Nuevo cliente - Asignando rol de cliente');
+      console.log('⚠️ ADVERTENCIA: No existe admin pero registros públicos solo crean clientes');
     }
     
     // Verificar si el email ya existe
