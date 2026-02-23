@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 // Usuarios de prueba predefinidos
 export const usuariosPrueba = [
   {
@@ -151,7 +153,7 @@ export const crearTodosLosDatosPrueba = async () => {
     console.log('Creando usuarios de prueba...');
     for (const usuario of usuariosPrueba) {
       try {
-        await axios.post("http://localhost:5000/auth/register", usuario);
+        await axios.post(`${API_URL}/auth/register`, usuario);
         resultados.usuarios.creados++;
         console.log(`✓ Usuario creado: ${usuario.email}`);
       } catch (err) {
@@ -323,7 +325,7 @@ export const crearSoloUsuarios = async () => {
 
   for (const usuario of usuariosPrueba) {
     try {
-      await axios.post("http://localhost:5000/auth/register", usuario);
+      await axios.post(`${API_URL}/auth/register`, usuario);
       resultados.creados++;
     } catch (err) {
       if (err.response?.status === 400 && err.response?.data?.message?.includes("ya existe")) {
