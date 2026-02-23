@@ -1,6 +1,7 @@
 ﻿const Cliente = require("../models/Cliente");
 const User = require("../models/User");
 const Transaccion = require("../models/Transaccion");
+const Conductor = require("../models/Conductor");
 const cacheService = require("../services/cacheService");
 const { paginatedResponse, getSequelizePaginationOptions } = require("../middlewares/paginationMiddleware");
 
@@ -472,15 +473,7 @@ exports.getTransaccionesCompra = async (req, res) => {
 exports.getRecargasConductores = async (req, res) => {
   try {
     const { id } = req.params;
-    const Conductor = require("../models/Conductor");
-    
-    // Buscar el cliente
-    const cliente = await Cliente.findByPk(id, {
-      attributes: ['id', 'nombres', 'apellidos', 'saldo']
-    });
-    if (!cliente) {
-      return res.status(404).json({ message: "Cliente no encontrado" });
-    }
+    const { Op } = require('sequelize');
 
     // Obtener todos los conductores del cliente
     const conductores = await Conductor.findAll({
@@ -493,46 +486,43 @@ exports.getRecargasConductores = async (req, res) => {
     }
 
     const conductorIds = conductores.map(c => c.id);
+    // Mapa id -> datos para lookup rápido
+    const conductorMap = {};
+    conductores.forEach(c => { conductorMap[c.id] = c; });
 
-    // Obtener todas las recargas realizadas a estos conductores (tipo: 'recarga')
-    const { Op } = require('sequelize');
+    // Obtener todas las recargas a estos conductores (sin include para evitar errores de asociación)
     const recargas = await Transaccion.findAll({
       where: {
         clienteId: id,
         conductorId: { [Op.in]: conductorIds },
         tipo: 'recarga'
       },
-      order: [['createdAt', 'DESC']],
-      include: [{
-        model: Conductor,
-        attributes: ['id', 'nombres', 'apellidos', 'cedula']
-      }]
+      order: [['createdAt', 'DESC']]
     });
 
-    console.log(`📊 Cliente ID ${id}: Recargas a conductores encontradas: ${recargas.length}`);
+    console.log(`📊 getRecargasConductores clienteId=${id}: ${recargas.length} registros`);
 
-    // Formatear la respuesta
-    const recargasFormateadas = recargas.map(r => ({
-      id: r.id,
-      conductorId: r.conductorId,
-      conductorNombre: r.Conductor ? `${r.Conductor.nombres} ${r.Conductor.apellidos}` : 'N/A',
-      conductorCedula: r.Conductor ? r.Conductor.cedula : 'N/A',
-      monto: r.monto,
-      metodoPago: r.metodoPago,
-      descripcion: r.descripcion,
-      estado: r.estado,
-      fecha: r.fecha || r.createdAt,
-      saldoAnterior: r.saldoAnterior,
-      saldoNuevo: r.saldoNuevo
-    }));
+    const recargasFormateadas = recargas.map(r => {
+      const cond = conductorMap[r.conductorId];
+      return {
+        id: r.id,
+        conductorId: r.conductorId,
+        conductorNombre: cond ? `${cond.nombres} ${cond.apellidos}` : 'N/A',
+        conductorCedula: cond ? cond.cedula : 'N/A',
+        monto: r.monto,
+        metodoPago: r.metodoPago,
+        descripcion: r.descripcion,
+        estado: r.estado,
+        fecha: r.createdAt,
+        saldoAnterior: r.saldoAnterior,
+        saldoNuevo: r.saldoNuevo
+      };
+    });
 
     res.json(recargasFormateadas);
   } catch (error) {
-    console.error("Error al obtener recargas de conductores:", error);
-    res.status(500).json({ 
-      message: "Error al obtener recargas de conductores",
-      error: error.message 
-    });
+    console.error("❌ getRecargasConductores error:", error);
+    res.status(500).json({ message: "Error al obtener recargas de conductores", error: error.message });
   }
 };
 
