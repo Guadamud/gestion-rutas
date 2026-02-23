@@ -19,18 +19,21 @@ router.post("/register", async (req, res) => {
     rol
   } = req.body;
 
-  console.log('📝 Intento de registro:', { email, rol, nombres, apellidos });
+  console.log('📝 Intento de registro:', { email, nombres, apellidos });
 
   try {
     // Verificar si ya existe algún usuario en la base de datos
     const totalUsers = await User.count();
     console.log('📊 Total de usuarios en DB:', totalUsers);
     
-    // Si no hay usuarios, el primero será admin automáticamente
-    let rolFinal = rol;
+    // SEGURIDAD: El registro público SOLO puede crear clientes
+    // La única excepción es el primer usuario que será admin automáticamente
+    let rolFinal = 'cliente';
     if (totalUsers === 0) {
       rolFinal = 'admin';
       console.log('🎯 Primer usuario del sistema - Asignando rol de administrador');
+    } else {
+      console.log('👤 Nuevo cliente - Asignando rol de cliente');
     }
     
     // Verificar si el email ya existe
