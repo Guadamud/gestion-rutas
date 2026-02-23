@@ -3,6 +3,23 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 
+// Ruta TEMPORAL para listar todos los usuarios (DEBUGGING)
+// ⚠️ ELIMINAR EN PRODUCCIÓN
+router.get("/listar-usuarios", async (req, res) => {
+  try {
+    const usuarios = await User.findAll({
+      attributes: ['id', 'nombres', 'apellidos', 'email', 'rol', 'cedula', 'celular', 'createdAt']
+    });
+
+    res.json({
+      total: usuarios.length,
+      usuarios: usuarios
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Ruta TEMPORAL para crear el primer admin
 // ⚠️ ELIMINAR DESPUÉS DE CREAR EL ADMIN
 router.post("/crear-primer-admin", async (req, res) => {
