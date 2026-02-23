@@ -448,19 +448,14 @@ exports.getTransaccionesCompra = async (req, res) => {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
-    // Obtener TODAS las solicitudes de compra del cliente (todos los estados)
-    // Solo las que el cliente hizo directamente (no conductores)
+    // Obtener TODAS las solicitudes de compra del cliente (todos los estados, sin filtros adicionales)
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
-        tipo: 'solicitud_compra',
-        [Op.or]: [
-          { solicitadoPor: 'cliente' },
-          { conductorId: { [Op.is]: null } }
-        ]
+        tipo: 'solicitud_compra'
       },
       order: [['createdAt', 'DESC']],
-      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'solicitadoPor', 'conductorId']
+      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'fecha', 'solicitadoPor', 'conductorId']
     });
 
     console.log(`📊 Cliente ID ${id}: ${cliente.nombres} ${cliente.apellidos}`);
@@ -487,7 +482,8 @@ exports.getTransaccionesCompra = async (req, res) => {
       metodoPago: t.metodoPago,
       descripcion: t.descripcion,
       estado: t.estado,
-      fecha: t.createdAt
+      fecha: t.fecha || t.createdAt,
+      solicitadoPor: t.solicitadoPor
     }));
 
     res.json(transaccionesFormateadas);
