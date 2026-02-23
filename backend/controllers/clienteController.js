@@ -418,25 +418,34 @@ exports.procesarSolicitud = async (req, res) => {
 exports.getTransaccionesCompra = async (req, res) => {
   try {
     const { id } = req.params;
-    const Transaccion = require("../models/Transaccion");
+    const { Op } = require('sequelize');
     
     // Buscar el cliente
-    const cliente = await Cliente.findByPk(id);
+    const cliente = await Cliente.findByPk(id, {
+      attributes: ['id', 'nombres', 'apellidos', 'saldo']
+    });
     if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
     // Obtener todas las transacciones de compra de saldo (aprobadas)
+    // Incluir las que fueron solicitadas por el cliente O las que no tienen conductorId
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
         tipo: 'solicitud_compra',
         estado: 'aprobada',
-        solicitadoPor: 'cliente'
+        [Op.or]: [
+          { solicitadoPor: 'cliente' },
+          { solicitadoPor: null },
+          { conductorId: null }
+        ]
       },
       order: [['createdAt', 'DESC']],
-      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt']
+      attributes: ['id', 'clienteId', 'monto', 'metodoPago', 'descripcion', 'estado', 'createdAt', 'solicitadoPor', 'conductorId']
     });
+
+    console.log(`📊 Transacciones de compra para cliente ${id}:`, transacciones.length);
 
     // Formatear la respuesta
     const transaccionesFormateadas = transacciones.map(t => ({
@@ -463,11 +472,12 @@ exports.getTransaccionesCompra = async (req, res) => {
 exports.getRecargasConductores = async (req, res) => {
   try {
     const { id } = req.params;
-    const Transaccion = require("../models/Transaccion");
     const Conductor = require("../models/Conductor");
     
     // Buscar el cliente
-    const cliente = await Cliente.findByPk(id);
+    const cliente = await Cliente.findByPk(id, {
+      attributes: ['id', 'nombres', 'apellidos', 'saldo']
+    });
     if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
@@ -475,7 +485,7 @@ exports.getRecargasConductores = async (req, res) => {
     // Obtener todos los conductores del cliente
     const conductores = await Conductor.findAll({
       where: { clienteId: id },
-      attributes: ['id', 'nombre', 'cedula']
+      attributes: ['id', 'nombres', 'apellidos', 'cedula']
     });
 
     if (conductores.length === 0) {
@@ -484,26 +494,28 @@ exports.getRecargasConductores = async (req, res) => {
 
     const conductorIds = conductores.map(c => c.id);
 
-    // Obtener todas las solicitudes de compra hechas por estos conductores
+    // Obtener todas las recargas realizadas a estos conductores (tipo: 'recarga')
     const recargas = await Transaccion.findAll({
       where: {
         clienteId: id,
         conductorId: conductorIds,
-        tipo: 'solicitud_compra',
-        solicitadoPor: 'conductor'
+        tipo: 'recarga',
+        estado: 'aprobada'
       },
       order: [['createdAt', 'DESC']],
       include: [{
         model: Conductor,
-        attributes: ['id', 'nombre', 'cedula']
+        attributes: ['id', 'nombres', 'apellidos', 'cedula']
       }]
     });
+
+    console.log(`📊 Recargas a conductores para cliente ${id}:`, recargas.length);
 
     // Formatear la respuesta
     const recargasFormateadas = recargas.map(r => ({
       id: r.id,
       conductorId: r.conductorId,
-      conductorNombre: r.Conductor ? r.Conductor.nombre : 'N/A',
+      conductorNombre: r.Conductor ? `${r.Conductor.nombres} ${r.Conductor.apellidos}` : 'N/A',
       conductorCedula: r.Conductor ? r.Conductor.cedula : 'N/A',
       monto: r.monto,
       metodoPago: r.metodoPago,
