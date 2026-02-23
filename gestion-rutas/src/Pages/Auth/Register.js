@@ -35,6 +35,7 @@ import {
 } from "@mui/icons-material";
 
 const Register = () => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   const [nombres, setNombres] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [cedula, setCedula] = useState("");
@@ -83,7 +84,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/auth/register", {
+      await axios.post(`${API_URL}/auth/register`, {
         nombres,
         apellidos,
         cedula,
