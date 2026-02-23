@@ -289,7 +289,6 @@ exports.updateSaldoConductor = async (req, res) => {
     }
 
     // Obtener el cliente asociado
-    const Cliente = require("../models/Cliente");
     const cliente = await Cliente.findByPk(conductor.clienteId);
     if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
@@ -305,9 +304,12 @@ exports.updateSaldoConductor = async (req, res) => {
       }
       
       // Descontar del saldo del cliente
-      await cliente.update({ 
-        saldo: saldoCliente - parseFloat(monto) 
-      });
+      const nuevoSaldoCliente = saldoCliente - parseFloat(monto);
+      await cliente.update({ saldo: nuevoSaldoCliente });
+      
+      // Invalidar caché del cliente
+      cacheService.del(`cliente_${conductor.clienteId}`);
+      cacheService.delPattern('clientes_*');
     }
     
     const saldoAnterior = parseFloat(conductor.saldo);
