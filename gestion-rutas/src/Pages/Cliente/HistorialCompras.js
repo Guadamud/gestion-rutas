@@ -48,7 +48,10 @@ const HistorialCompras = () => {
   const [paginaCompras, setPaginaCompras] = useState(0);
   const [paginaRecargas, setPaginaRecargas] = useState(0);
   const registrosPorPagina = 6;
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date());
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
+    const hoy = new Date();
+    return new Date(Date.UTC(hoy.getFullYear(), hoy.getMonth(), 1));
+  });
   const [estadisticas, setEstadisticas] = useState({
     totalComprado: 0,
     totalTransacciones: 0,
@@ -76,8 +79,9 @@ const HistorialCompras = () => {
     
     return datos.filter(item => {
       const fecha = new Date(item.fecha || item.createdAt);
-      return fecha.getMonth() === fechaSeleccionada.getMonth() && 
-             fecha.getFullYear() === fechaSeleccionada.getFullYear();
+      // Usar getUTCMonth/getUTCFullYear para evitar problemas de zona horaria
+      return fecha.getUTCMonth() === fechaSeleccionada.getUTCMonth() && 
+             fecha.getUTCFullYear() === fechaSeleccionada.getUTCFullYear();
     });
   };
 
@@ -200,14 +204,22 @@ const HistorialCompras = () => {
           <TextField
             label="Mes y Año"
             type="month"
-            value={fechaSeleccionada ? new Date(fechaSeleccionada).toISOString().slice(0, 7) : ''}
-            onChange={(e) => setFechaSeleccionada(new Date(e.target.value))}
+            value={fechaSeleccionada ? `${fechaSeleccionada.getUTCFullYear()}-${String(fechaSeleccionada.getUTCMonth() + 1).padStart(2, '0')}` : ''}
+            onChange={(e) => {
+              // Parsear como UTC para evitar problemas de zona horaria
+              const [y, m] = e.target.value.split('-').map(Number);
+              const d = new Date(Date.UTC(y, m - 1, 1));
+              setFechaSeleccionada(d);
+            }}
             sx={{ minWidth: 250 }}
             InputLabelProps={{ shrink: true }}
           />
           <Button 
             variant="outlined"
-            onClick={() => setFechaSeleccionada(new Date())}
+            onClick={() => {
+              const hoy = new Date();
+              setFechaSeleccionada(new Date(Date.UTC(hoy.getFullYear(), hoy.getMonth(), 1)));
+            }}
             sx={{ 
               color: professionalColors.primary[500],
               borderColor: professionalColors.primary[500],

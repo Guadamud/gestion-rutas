@@ -527,7 +527,6 @@ exports.getRecargasConductores = async (req, res) => {
     const conductorIds = conductores.map(c => c.id);
 
     // Obtener todas las recargas realizadas a estos conductores (tipo: 'recarga')
-    // Incluye todas sin importar el estado
     const { Op } = require('sequelize');
     const recargas = await Transaccion.findAll({
       where: {
@@ -554,7 +553,7 @@ exports.getRecargasConductores = async (req, res) => {
       metodoPago: r.metodoPago,
       descripcion: r.descripcion,
       estado: r.estado,
-      fecha: r.createdAt,
+      fecha: r.fecha || r.createdAt,
       saldoAnterior: r.saldoAnterior,
       saldoNuevo: r.saldoNuevo
     }));
