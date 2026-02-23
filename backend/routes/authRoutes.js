@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { verifyToken, authorizeRoles } = require("../middlewares/authMiddleware");
+const { sequelize } = require("../config/database");
 
 const router = express.Router();
 
@@ -96,11 +97,30 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ where: { email } });
-  if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
+  console.log('🔐 Intento de login con email:', email);
+
+  // Buscar el usuario por email (case insensitive)
+  const user = await User.findOne({ 
+    where: sequelize.where(
+      sequelize.fn('LOWER', sequelize.col('email')),
+      sequelize.fn('LOWER', email)
+    )
+  });
+  
+  if (!user) {
+    console.log('❌ Usuario no encontrado con email:', email);
+    return res.status(400).json({ error: "Usuario no encontrado" });
+  }
+
+  console.log('✅ Usuario encontrado:', user.email, '- Rol:', user.rol);
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ error: "Contraseña incorrecta" });
+  if (!isMatch) {
+    console.log('❌ Contraseña incorrecta para:', email);
+    return res.status(400).json({ error: "Contraseña incorrecta" });
+  }
+
+  console.log('✅ Contraseña correcta para:', email);
 
   // Validaciones adicionales para conductores
   if (user.rol === 'conductor') {
