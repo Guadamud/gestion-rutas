@@ -448,19 +448,15 @@ exports.getTransaccionesCompra = async (req, res) => {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
-    // Obtener todas las transacciones de compra de saldo del cliente
-    // Solo mostrar las aprobadas donde el cliente es quien solicitó (no las de conductores)
+    // Obtener TODAS las solicitudes de compra del cliente (todos los estados)
+    // Solo las que el cliente hizo directamente (no conductores)
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
         tipo: 'solicitud_compra',
-        estado: 'aprobada',
         [Op.or]: [
           { solicitadoPor: 'cliente' },
-          { 
-            solicitadoPor: null,
-            conductorId: null
-          }
+          { conductorId: { [Op.is]: null } }
         ]
       },
       order: [['createdAt', 'DESC']],
@@ -531,16 +527,13 @@ exports.getRecargasConductores = async (req, res) => {
     const conductorIds = conductores.map(c => c.id);
 
     // Obtener todas las recargas realizadas a estos conductores (tipo: 'recarga')
-    // Estado puede ser 'aprobada' o 'completada' dependiendo de cómo se hizo la recarga
+    // Incluye todas sin importar el estado
     const { Op } = require('sequelize');
     const recargas = await Transaccion.findAll({
       where: {
         clienteId: id,
-        conductorId: conductorIds,
-        tipo: 'recarga',
-        estado: {
-          [Op.in]: ['aprobada', 'completada']
-        }
+        conductorId: { [Op.in]: conductorIds },
+        tipo: 'recarga'
       },
       order: [['createdAt', 'DESC']],
       include: [{

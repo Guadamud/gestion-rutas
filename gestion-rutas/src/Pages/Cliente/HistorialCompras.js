@@ -85,9 +85,10 @@ const HistorialCompras = () => {
     const comprasFiltradas = filtrarPorMes(compras);
     const recargasFiltradas = filtrarPorMes(recargasConductores);
 
-    // Estadísticas de compras
-    const total = comprasFiltradas.reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
-    const ultima = comprasFiltradas.length > 0 ? comprasFiltradas[0] : null;
+    // Solo contar aprobadas en el total comprado
+    const soloAprobadas = comprasFiltradas.filter(t => t.estado === 'aprobada');
+    const total = soloAprobadas.reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
+    const ultima = soloAprobadas.length > 0 ? soloAprobadas[0] : null;
 
     setEstadisticas({
       totalComprado: total,
@@ -352,8 +353,16 @@ const HistorialCompras = () => {
                         </TableCell>
                         <TableCell>
                           <Chip 
-                            label={compra.estado || 'Completado'} 
-                            color="success"
+                            label={
+                              compra.estado === 'aprobada' ? 'Aprobada' :
+                              compra.estado === 'pendiente' ? 'Pendiente' :
+                              compra.estado === 'rechazada' ? 'Rechazada' : 'Completado'
+                            } 
+                            color={
+                              compra.estado === 'aprobada' ? 'success' :
+                              compra.estado === 'pendiente' ? 'warning' :
+                              compra.estado === 'rechazada' ? 'error' : 'default'
+                            }
                             size="small"
                             sx={{ textTransform: 'capitalize' }}
                           />
