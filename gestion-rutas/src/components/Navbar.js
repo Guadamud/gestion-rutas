@@ -45,7 +45,6 @@ import {
 } from '@mui/icons-material';
 import { professionalColors } from '../utils/professionalColors';
 import logoUleam from '../assets/LOGO-ULEAM.png';
-import logoPajan from '../assets/logo del canton pajan .png';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -385,16 +384,6 @@ const Navbar = () => {
 
           {/* Logo y título */}
           <Box display="flex" alignItems="center" gap={2} sx={{ flexGrow: isMobile ? 1 : 0 }}>
-            <Box 
-              component="img" 
-              src={logoPajan} 
-              alt="Logo Cantón Paján" 
-              sx={{ 
-                height: { xs: 35, sm: 45 }, 
-                width: 'auto',
-                objectFit: 'contain'
-              }} 
-            />
             <DirectionsBusFilledIcon sx={{ color: professionalColors.neutral[200] }} />
             <Typography 
               variant="h6"
