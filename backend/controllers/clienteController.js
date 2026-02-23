@@ -364,13 +364,25 @@ exports.procesarSolicitud = async (req, res) => {
           return res.status(404).json({ message: "Conductor no encontrado" });
         }
         
-        const nuevoSaldoConductor = parseFloat(conductor.saldo || 0) + parseFloat(solicitud.monto);
-        console.log('Saldo anterior conductor:', conductor.saldo, 'Nuevo saldo:', nuevoSaldoConductor);
+        const saldoAntesConductor = parseFloat(conductor.saldo || 0);
+        const nuevoSaldoConductor = saldoAntesConductor + parseFloat(solicitud.monto);
+        console.log('Saldo anterior conductor:', saldoAntesConductor, 'Nuevo saldo:', nuevoSaldoConductor);
         await conductor.update({ saldo: nuevoSaldoConductor });
         await solicitud.update({ 
           estado: "aprobada",
-          aprobadoPorId: userId 
+          aprobadoPorId: userId,
+          saldoAnterior: saldoAntesConductor,
+          saldoNuevo: nuevoSaldoConductor
         });
+        
+        // Invalidar caché del conductor y del cliente asociado
+        cacheService.del(`conductor_${conductor.id}`);
+        cacheService.del(`conductor_usuario_${conductor.usuarioId}`);
+        cacheService.delPattern('conductores_*');
+        if (solicitud.clienteId) {
+          cacheService.del(`cliente_${solicitud.clienteId}`);
+          cacheService.delPattern('clientes_*');
+        }
         
         res.json({ 
           message: "Solicitud aprobada correctamente. Saldo agregado al conductor.",
@@ -387,11 +399,18 @@ exports.procesarSolicitud = async (req, res) => {
         
         const nuevoSaldo = parseFloat(cliente.saldo || 0) + parseFloat(solicitud.monto);
         console.log('Saldo anterior Cliente:', cliente.saldo, 'Nuevo saldo:', nuevoSaldo);
+        const saldoAntesCliente = parseFloat(cliente.saldo || 0);
         await cliente.update({ saldo: nuevoSaldo });
         await solicitud.update({ 
           estado: "aprobada",
-          aprobadoPorId: userId 
+          aprobadoPorId: userId,
+          saldoAnterior: saldoAntesCliente,
+          saldoNuevo: nuevoSaldo
         });
+        
+        // Invalidar caché del cliente para que el saldo se refresque
+        cacheService.del(`cliente_${solicitud.clienteId}`);
+        cacheService.delPattern('clientes_*');
         
         res.json({ 
           message: "Solicitud aprobada correctamente",

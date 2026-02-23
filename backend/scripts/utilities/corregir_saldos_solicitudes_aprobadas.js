@@ -1,10 +1,13 @@
 /**
  * Script para corregir saldos de clientes/conductores con solicitudes aprobadas
- * que no se reflejaron debido al bug de redeclaración de variables
+ * que no se reflejaron debido al bug de falta de actualización de saldo.
+ *
+ * SEGURO PARA RE-EJECUTAR: Solo aplica solicitudes donde saldoNuevo es NULL
+ * (indica que el saldo nunca fue aplicado al aprobar).
  */
 
-const { Sequelize } = require('sequelize');
 const path = require('path');
+const { Op } = require('sequelize');
 
 // Configurar la ruta del módulo de modelos
 const modelsPath = path.join(__dirname, '../../models');
@@ -14,16 +17,24 @@ async function corregirSaldosSolicitudesAprobadas() {
   try {
     console.log('🔧 Iniciando corrección de saldos...\n');
 
-    // Buscar todas las solicitudes aprobadas
+    // Solo buscar solicitudes aprobadas donde saldoNuevo es NULL
+    // (significa que se aprobaron antes del fix y el saldo nunca se aplicó)
     const solicitudesAprobadas = await Transaccion.findAll({
       where: {
         tipo: 'solicitud_compra',
-        estado: 'aprobada'
+        estado: 'aprobada',
+        saldoNuevo: { [Op.is]: null }
       },
       order: [['createdAt', 'ASC']]
     });
 
-    console.log(`📋 Encontradas ${solicitudesAprobadas.length} solicitudes aprobadas\n`);
+    console.log(`📋 Encontradas ${solicitudesAprobadas.length} solicitudes aprobadas SIN saldo aplicado\n`);
+
+    if (solicitudesAprobadas.length === 0) {
+      console.log('✅ Todas las solicitudes ya tienen el saldo aplicado correctamente.\n');
+      process.exit(0);
+      return;
+    }
 
     let clientesActualizados = 0;
     let conductoresActualizados = 0;
@@ -32,7 +43,7 @@ async function corregirSaldosSolicitudesAprobadas() {
     for (const solicitud of solicitudesAprobadas) {
       try {
         console.log(`\n⚙️  Procesando solicitud ID: ${solicitud.id}`);
-        console.log(`   Tipo: ${solicitud.solicitadoPor}`);
+        console.log(`   Tipo solicitante: ${solicitud.solicitadoPor}`);
         console.log(`   Monto: $${solicitud.monto}`);
 
         if (solicitud.solicitadoPor === 'conductor' && solicitud.conductorId) {
@@ -51,24 +62,14 @@ async function corregirSaldosSolicitudesAprobadas() {
           console.log(`   👤 Conductor: ${conductor.nombres} ${conductor.apellidos}`);
           console.log(`   💰 Saldo anterior: $${saldoAnterior}`);
           console.log(`   💰 Nuevo saldo: $${nuevoSaldo}`);
-          
-          // NO actualizar si el saldo ya fue aplicado
-          // (verificamos si el saldo actual ya incluye esta transacción)
-          const montoEsperado = solicitudesAprobadas
-            .filter(s => s.conductorId === conductor.id && s.id <= solicitud.id)
-            .reduce((sum, s) => sum + parseFloat(s.monto), 0);
-          
-          if (Math.abs(conductor.saldo - montoEsperado) < 0.01) {
-            console.log(`   ✅ Saldo ya está correcto, omitiendo...`);
-            continue;
-          }
 
           await conductor.update({ saldo: nuevoSaldo });
+          await solicitud.update({ saldoAnterior, saldoNuevo: nuevoSaldo });
           conductoresActualizados++;
           console.log(`   ✅ Conductor actualizado`);
 
         } else {
-          // Actualizar saldo del cliente (dueño)
+          // Actualizar saldo del cliente (dueño de bus)
           const cliente = await Cliente.findByPk(solicitud.clienteId, {
             attributes: ['id', 'nombres', 'apellidos', 'saldo']
           });
@@ -86,17 +87,8 @@ async function corregirSaldosSolicitudesAprobadas() {
           console.log(`   💰 Saldo anterior: $${saldoAnterior}`);
           console.log(`   💰 Nuevo saldo: $${nuevoSaldo}`);
           
-          // NO actualizar si el saldo ya fue aplicado
-          const montoEsperado = solicitudesAprobadas
-            .filter(s => s.clienteId === cliente.id && s.solicitadoPor !== 'conductor' && s.id <= solicitud.id)
-            .reduce((sum, s) => sum + parseFloat(s.monto), 0);
-          
-          if (Math.abs(cliente.saldo - montoEsperado) < 0.01) {
-            console.log(`   ✅ Saldo ya está correcto, omitiendo...`);
-            continue;
-          }
-
           await cliente.update({ saldo: nuevoSaldo });
+          await solicitud.update({ saldoAnterior, saldoNuevo: nuevoSaldo });
           clientesActualizados++;
           console.log(`   ✅ Cliente actualizado`);
         }
