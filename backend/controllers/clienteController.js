@@ -170,12 +170,12 @@ exports.updateCliente = async (req, res) => {
     const { id } = req.params;
     const { nombres, apellidos, telefono, email, direccion, estado } = req.body;
     
-    const Cliente = await Cliente.findByPk(id);
-    if (!Cliente) {
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
     
-    await Cliente.update({
+    await cliente.update({
       nombres,
       apellidos,
       telefono,
@@ -201,25 +201,25 @@ exports.updateSaldo = async (req, res) => {
     const { id } = req.params;
     const { monto, operacion } = req.body; // operacion: 'agregar' o 'restar'
     
-    const Cliente = await Cliente.findByPk(id);
-    if (!Cliente) {
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
     
-    let nuevoSaldo = parseFloat(Cliente.saldo);
+    let nuevoSaldo = parseFloat(cliente.saldo);
     if (operacion === 'agregar') {
       nuevoSaldo += parseFloat(monto);
     } else if (operacion === 'restar') {
       nuevoSaldo -= parseFloat(monto);
     }
     
-    await Cliente.update({ saldo: nuevoSaldo });
+    await cliente.update({ saldo: nuevoSaldo });
     
     // Invalidar caché
     cacheService.del(`cliente_${id}`);
     cacheService.delPattern('clientes_*');
     
-    res.json(Cliente);
+    res.json(cliente);
   } catch (error) {
     console.error("Error al actualizar saldo:", error);
     res.status(500).json({ message: "Error al actualizar saldo" });
@@ -529,12 +529,12 @@ exports.deleteCliente = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const Cliente = await Cliente.findByPk(id);
-    if (!Cliente) {
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
     
-    await Cliente.destroy();
+    await cliente.destroy();
     
     res.json({ message: "Cliente eliminado correctamente" });
   } catch (error) {
