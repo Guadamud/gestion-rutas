@@ -410,6 +410,7 @@ exports.procesarSolicitud = async (req, res) => {
         
         // Invalidar caché del cliente para que el saldo se refresque
         cacheService.del(`cliente_${solicitud.clienteId}`);
+        cacheService.del(`cliente_user_${cliente.userId}`);
         cacheService.delPattern('clientes_*');
         
         res.json({ 
