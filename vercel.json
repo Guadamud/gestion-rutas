@@ -1,7 +1,4 @@
 {
-  "buildCommand": "cd gestion-rutas && npm install && npm run build",
-  "outputDirectory": "gestion-rutas/build",
-  "devCommand": "cd gestion-rutas && npm start",
   "rewrites": [
     {
       "source": "/(.*)",
