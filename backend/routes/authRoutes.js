@@ -19,6 +19,16 @@ router.post("/register", async (req, res) => {
   } = req.body;
 
   try {
+    // Verificar si ya existe algún usuario en la base de datos
+    const totalUsers = await User.count();
+    
+    // Si no hay usuarios, el primero será admin automáticamente
+    let rolFinal = rol;
+    if (totalUsers === 0) {
+      rolFinal = 'admin';
+      console.log('🎯 Primer usuario del sistema - Asignando rol de administrador');
+    }
+    
     // Verificar si el email ya existe
     const existingUserByEmail = await User.findOne({ where: { email } });
     if (existingUserByEmail) {
@@ -48,7 +58,7 @@ router.post("/register", async (req, res) => {
       conductor: 'marronTierra',
     };
     
-    const tema_preferido = temasPorRol[rol] || 'azulProfesional';
+    const tema_preferido = temasPorRol[rolFinal] || 'azulProfesional';
 
     const newUser = await User.create({
       nombres,
@@ -57,7 +67,7 @@ router.post("/register", async (req, res) => {
       celular,
       email,
       password: hashedPassword,
-      rol,
+      rol: rolFinal,
       tema_preferido,
     });
 
