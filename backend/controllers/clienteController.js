@@ -1,7 +1,6 @@
 ﻿const Cliente = require("../models/Cliente");
 const User = require("../models/User");
 const Transaccion = require("../models/Transaccion");
-const Conductor = require("../models/Conductor");
 const cacheService = require("../services/cacheService");
 const { paginatedResponse, getSequelizePaginationOptions } = require("../middlewares/paginationMiddleware");
 
@@ -474,6 +473,7 @@ exports.getRecargasConductores = async (req, res) => {
   try {
     const { id } = req.params;
     const { Op } = require('sequelize');
+    const Conductor = require('../models/Conductor');
 
     // Obtener todos los conductores del cliente
     const conductores = await Conductor.findAll({
@@ -481,26 +481,26 @@ exports.getRecargasConductores = async (req, res) => {
       attributes: ['id', 'nombres', 'apellidos', 'cedula']
     });
 
+    console.log(`📊 getRecargasConductores clienteId=${id}: ${conductores.length} conductores encontrados`);
+
     if (conductores.length === 0) {
       return res.json([]);
     }
 
     const conductorIds = conductores.map(c => c.id);
-    // Mapa id -> datos para lookup rápido
     const conductorMap = {};
     conductores.forEach(c => { conductorMap[c.id] = c; });
 
-    // Obtener todas las recargas a estos conductores (sin include para evitar errores de asociación)
+    // Buscar recargas SIN filtrar por clienteId (por si acaso no se guardó)
     const recargas = await Transaccion.findAll({
       where: {
-        clienteId: id,
         conductorId: { [Op.in]: conductorIds },
         tipo: 'recarga'
       },
       order: [['createdAt', 'DESC']]
     });
 
-    console.log(`📊 getRecargasConductores clienteId=${id}: ${recargas.length} registros`);
+    console.log(`📊 getRecargasConductores clienteId=${id}: ${recargas.length} recargas encontradas`);
 
     const recargasFormateadas = recargas.map(r => {
       const cond = conductorMap[r.conductorId];
@@ -521,8 +521,8 @@ exports.getRecargasConductores = async (req, res) => {
 
     res.json(recargasFormateadas);
   } catch (error) {
-    console.error("❌ getRecargasConductores error:", error);
-    res.status(500).json({ message: "Error al obtener recargas de conductores", error: error.message });
+    console.error('❌ getRecargasConductores error:', error);
+    res.status(500).json({ message: 'Error al obtener recargas', error: error.message });
   }
 };
 
