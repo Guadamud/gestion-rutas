@@ -205,6 +205,39 @@ const Navbar = () => {
           </ListItemButton>
         )}
 
+        {/* Menú para usuarios NO autenticados */}
+        {!user && (
+          <>
+            <ListItemButton
+              component={Link}
+              to="/"
+              onClick={() => setMobileOpen(false)}
+              sx={{ borderRadius: 2, mb: 1 }}
+            >
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary="Inicio" />
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              sx={{ borderRadius: 2, mb: 1 }}
+            >
+              <ListItemIcon><PersonIcon /></ListItemIcon>
+              <ListItemText primary="Iniciar Sesión" />
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/register"
+              onClick={() => setMobileOpen(false)}
+              sx={{ borderRadius: 2, mb: 1 }}
+            >
+              <ListItemIcon><PeopleIcon /></ListItemIcon>
+              <ListItemText primary="Registrarse" />
+            </ListItemButton>
+          </>
+        )}
+
         {/* Menú de administrador */}
         {user?.rol === 'admin' && (
           <>
