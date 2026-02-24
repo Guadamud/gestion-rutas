@@ -336,8 +336,8 @@ const Home = () => {
                 src={logoPajan}
                 alt="Logo Paján"
                 style={{
-                  width: 'clamp(120px, 14vw, 180px)',
-                  height: 'clamp(120px, 14vw, 180px)',
+                  width: 'clamp(180px, 22vw, 280px)',
+                  height: 'clamp(180px, 22vw, 280px)',
                   objectFit: 'contain'
                 }}
               />

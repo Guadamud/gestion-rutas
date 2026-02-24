@@ -155,7 +155,7 @@ const Register = () => {
               <img
                 src={logoPajan}
                 alt="Logo Paján"
-                style={{ width: 120, height: 120, objectFit: 'contain' }}
+                style={{ width: 180, height: 180, objectFit: 'contain' }}
               />
             </Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
