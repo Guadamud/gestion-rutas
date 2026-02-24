@@ -769,10 +769,11 @@ const DuenoBusPage = () => {
   const calcularTotales = () => {
     const saldoDuenoBus = parseFloat(duenoBus?.saldo || 0);
     const saldoDistribuido = conductores.reduce((sum, c) => sum + parseFloat(c.saldo || 0), 0);
-    const totalFrecuencias = conductores.reduce((sum, c) => sum + (c.totalFrecuencias || 0), 0);
+    // Total frecuencias: todas las del cliente (cliente + conductor), no solo las del conductor
+    const totalFrecuencias = frecuencias.length;
     const totalIngresos = conductores.reduce((sum, c) => sum + parseFloat(c.ingresosTotales || 0), 0);
-    // Gastos = solo los cobros de frecuencias realizados por los conductores
-    const totalGastos = totalIngresos;
+    // Gastos = cobros de frecuencias (cliente + conductor): suma el precio de la ruta por cada frecuencia
+    const totalGastos = frecuencias.reduce((sum, f) => sum + parseFloat(f.Ruta?.precio || 0), 0);
     
     return { saldoDuenoBus, saldoDistribuido, totalFrecuencias, totalIngresos, totalGastos };
   };
