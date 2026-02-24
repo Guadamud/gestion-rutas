@@ -27,7 +27,8 @@ import {
   InputLabel,
   Select,
   Chip,
-  Alert
+  Alert,
+  Autocomplete
 } from '@mui/material';
 import {
   Add,
@@ -337,37 +338,43 @@ const LimitesRutaBusAdmin = () => {
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ pt: 2 }}>
-              <FormControl fullWidth required>
-                <InputLabel>Bus</InputLabel>
-                <Select
-                  value={formData.busId}
-                  onChange={(e) => setFormData({ ...formData, busId: e.target.value })}
-                  label="Bus"
-                >
-                  <MenuItem value="">Seleccione un bus</MenuItem>
-                  {buses.filter(b => b.estado === 'activo').map((bus) => (
-                    <MenuItem key={bus.id} value={bus.id}>
-                      {bus.placa} - {bus.modelo} ({bus.empresa})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                options={buses.filter(b => b.estado === 'activo')}
+                getOptionLabel={(bus) => `${bus.placa} – ${bus.modelo} (${bus.empresa})`}
+                value={buses.find(b => b.id === formData.busId) || null}
+                onChange={(_, selected) => setFormData({ ...formData, busId: selected ? selected.id : '' })}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Bus *"
+                    placeholder="Escribe placa o modelo para buscar..."
+                  />
+                )}
+                renderOption={(props, bus) => (
+                  <Box component="li" {...props} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start !important' }}>
+                    <Typography variant="body2" fontWeight="600">{bus.placa}</Typography>
+                    <Typography variant="caption" color="text.secondary">{bus.modelo} · {bus.empresa}</Typography>
+                  </Box>
+                )}
+                noOptionsText="No se encontraron buses"
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+              />
 
-              <FormControl fullWidth required>
-                <InputLabel>Ruta</InputLabel>
-                <Select
-                  value={formData.rutaId}
-                  onChange={(e) => setFormData({ ...formData, rutaId: e.target.value })}
-                  label="Ruta"
-                >
-                  <MenuItem value="">Seleccione una ruta</MenuItem>
-                  {rutas.map((ruta) => (
-                    <MenuItem key={ruta.id} value={ruta.id}>
-                      {ruta.origen} → {ruta.destino} (${ruta.precio})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                options={rutas}
+                getOptionLabel={(ruta) => `${ruta.origen} → ${ruta.destino} ($${ruta.precio})`}
+                value={rutas.find(r => r.id === formData.rutaId) || null}
+                onChange={(_, selected) => setFormData({ ...formData, rutaId: selected ? selected.id : '' })}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Ruta *"
+                    placeholder="Escribe origen o destino..."
+                  />
+                )}
+                noOptionsText="No se encontraron rutas"
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+              />
 
               <TextField
                 fullWidth
