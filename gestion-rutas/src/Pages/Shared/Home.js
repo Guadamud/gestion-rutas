@@ -840,7 +840,7 @@ const Home = () => {
                       </ListItemIcon>
                       <ListItemText
                         primary="Teléfono"
-                        secondary="+593 XX XXX XXXX"
+                        secondary="+593 98 369 7190"
                         primaryTypographyProps={{
                           fontSize: { xs: '0.875rem', sm: '1rem' }
                         }}
