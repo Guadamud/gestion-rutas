@@ -47,8 +47,33 @@ import {
   CheckCircle,
   Cancel,
   NavigateBefore,
-  NavigateNext
+  NavigateNext,
+  Warning,
+  EventBusy,
+  CalendarMonth
 } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Collapse from '@mui/material/Collapse';
+
+// ─── Helpers de estado de licencia ───────────────────────────────────────────
+const obtenerEstadoLicencia = (fechaVencimiento) => {
+  if (!fechaVencimiento) return { estado: 'sin_fecha', diasRestantes: null, color: 'default', label: 'Sin fecha' };
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const venc = new Date(fechaVencimiento + 'T00:00:00');
+  const diffMs = venc - hoy;
+  const diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (diasRestantes < 0) return { estado: 'vencida', diasRestantes, color: 'error', label: 'Vencida' };
+  if (diasRestantes <= 30) return { estado: 'por_vencer', diasRestantes, color: 'warning', label: `Vence en ${diasRestantes}d` };
+  return { estado: 'vigente', diasRestantes, color: 'success', label: 'Vigente' };
+};
+
+const formatFecha = (fecha) => {
+  if (!fecha) return 'N/A';
+  const [y, m, d] = fecha.split('-');
+  return `${d}/${m}/${y}`;
+};
 import CustomSnackbar from '../../components/CustomSnackbar';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -190,14 +215,6 @@ const ConductoresAdmin = () => {
     // Validar vencimiento de licencia
     if (!formData.vencimientoLicencia) {
       nuevosErrores.vencimientoLicencia = 'La fecha de vencimiento es obligatoria';
-    } else {
-      const fechaVencimiento = new Date(formData.vencimientoLicencia);
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      
-      if (fechaVencimiento < hoy) {
-        nuevosErrores.vencimientoLicencia = 'La licencia no puede estar vencida';
-      }
     }
 
     // Validar saldo
@@ -425,7 +442,7 @@ const ConductoresAdmin = () => {
         </Grid>
 
         {/* Stats Cards */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Card elevation={1} sx={{ minHeight: 140, flex: '0 0 calc(22% - 16px)', minWidth: 200, maxWidth: 'calc(22% - 16px)', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ textAlign: 'center', py: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Box sx={{ backgroundColor: 'primary.main', color: 'white', borderRadius: 2, p: 1, display: 'inline-flex', mb: 2, alignSelf: 'center' }}>
@@ -448,30 +465,81 @@ const ConductoresAdmin = () => {
               </Box>
               <Box>
                 <Typography variant="h4" fontWeight="bold" color="text.primary">
-                  {conductores.filter(c => (c.saldo || 0) > 0).length}
+                  {conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'vigente').length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Con Saldo
+                  Licencias Vigentes
                 </Typography>
               </Box>
             </CardContent>
           </Card>
-          <Card elevation={1} sx={{ minHeight: 140, flex: '0 0 calc(22% - 16px)', minWidth: 200, maxWidth: 'calc(22% - 16px)', display: 'flex', flexDirection: 'column' }}>
+          <Card elevation={1} sx={{ minHeight: 140, flex: '0 0 calc(22% - 16px)', minWidth: 200, maxWidth: 'calc(22% - 16px)', display: 'flex', flexDirection: 'column', border: conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'por_vencer').length > 0 ? '2px solid' : 'none', borderColor: 'warning.main' }}>
             <CardContent sx={{ textAlign: 'center', py: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <Box sx={{ backgroundColor: 'info.main', color: 'white', borderRadius: 2, p: 1, display: 'inline-flex', mb: 2, alignSelf: 'center' }}>
-                <DriveEta />
+              <Box sx={{ backgroundColor: 'warning.main', color: 'white', borderRadius: 2, p: 1, display: 'inline-flex', mb: 2, alignSelf: 'center' }}>
+                <Warning />
               </Box>
               <Box>
-                <Typography variant="h4" fontWeight="bold" color="text.primary">
-                  {clientes.length}
+                <Typography variant="h4" fontWeight="bold" color="warning.main">
+                  {conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'por_vencer').length}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Clientes
+                  Por Vencer (30d)
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+          <Card elevation={1} sx={{ minHeight: 140, flex: '0 0 calc(22% - 16px)', minWidth: 200, maxWidth: 'calc(22% - 16px)', display: 'flex', flexDirection: 'column', border: conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'vencida').length > 0 ? '2px solid' : 'none', borderColor: 'error.main' }}>
+            <CardContent sx={{ textAlign: 'center', py: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Box sx={{ backgroundColor: 'error.main', color: 'white', borderRadius: 2, p: 1, display: 'inline-flex', mb: 2, alignSelf: 'center' }}>
+                <EventBusy />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight="bold" color="error.main">
+                  {conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'vencida').length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Licencias Vencidas
                 </Typography>
               </Box>
             </CardContent>
           </Card>
         </Box>
+
+        {/* Alertas de licencias vencidas / por vencer */}
+        {conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'vencida').length > 0 && (
+          <Alert severity="error" sx={{ mb: 2 }} icon={<EventBusy />}>
+            <AlertTitle sx={{ fontWeight: 700 }}>Licencias Vencidas</AlertTitle>
+            <Box component="ul" sx={{ m: 0, pl: 2 }}>
+              {conductores
+                .filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'vencida')
+                .map(c => (
+                  <li key={c.id}>
+                    <strong>{c.nombre}</strong> — venció el {formatFecha(c.vencimientoLicencia)}
+                    {' '}({Math.abs(obtenerEstadoLicencia(c.vencimientoLicencia).diasRestantes)} días vencida)
+                  </li>
+                ))}
+            </Box>
+          </Alert>
+        )}
+        {conductores.filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'por_vencer').length > 0 && (
+          <Alert severity="warning" sx={{ mb: 2 }} icon={<Warning />}>
+            <AlertTitle sx={{ fontWeight: 700 }}>Licencias Próximas a Vencer</AlertTitle>
+            <Box component="ul" sx={{ m: 0, pl: 2 }}>
+              {conductores
+                .filter(c => obtenerEstadoLicencia(c.vencimientoLicencia).estado === 'por_vencer')
+                .sort((a, b) => obtenerEstadoLicencia(a.vencimientoLicencia).diasRestantes - obtenerEstadoLicencia(b.vencimientoLicencia).diasRestantes)
+                .map(c => {
+                  const { diasRestantes } = obtenerEstadoLicencia(c.vencimientoLicencia);
+                  return (
+                    <li key={c.id}>
+                      <strong>{c.nombre}</strong> — vence el {formatFecha(c.vencimientoLicencia)}
+                      {' '}(en {diasRestantes} día{diasRestantes !== 1 ? 's' : ''})
+                    </li>
+                  );
+                })}
+            </Box>
+          </Alert>
+        )}
 
         {/* Table */}
         <Card elevation={1}>
@@ -495,6 +563,7 @@ const ConductoresAdmin = () => {
                     <TableCell>Teléfono</TableCell>
                     <TableCell>Cliente</TableCell>
                     <TableCell>Licencia</TableCell>
+                    <TableCell>Venc. Licencia</TableCell>
                     <TableCell align="right">Saldo</TableCell>
                     <TableCell align="center">Acciones</TableCell>
                   </TableRow>
@@ -544,6 +613,25 @@ const ConductoresAdmin = () => {
                           color="info"
                         />
                       </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const { estado, color, label } = obtenerEstadoLicencia(conductor.vencimientoLicencia);
+                          return (
+                            <Box>
+                              <Chip
+                                label={label}
+                                size="small"
+                                color={color}
+                                icon={estado === 'vencida' ? <EventBusy sx={{ fontSize: '14px !important' }} /> : estado === 'por_vencer' ? <Warning sx={{ fontSize: '14px !important' }} /> : <CalendarMonth sx={{ fontSize: '14px !important' }} />}
+                                sx={{ mb: 0.5 }}
+                              />
+                              <Typography variant="caption" display="block" color="text.secondary">
+                                {formatFecha(conductor.vencimientoLicencia)}
+                              </Typography>
+                            </Box>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell align="right">
                         <Typography 
                           variant="body2" 
@@ -579,7 +667,7 @@ const ConductoresAdmin = () => {
                   ))}
                   {filteredConductores.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                         <Typography variant="body2" color="text.secondary">
                           No se encontraron conductores
                         </Typography>
@@ -788,9 +876,6 @@ const ConductoresAdmin = () => {
                     helperText={errors.vencimientoLicencia}
                     required
                     InputLabelProps={{ shrink: true }}
-                    inputProps={{ 
-                      min: new Date().toISOString().split('T')[0]
-                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
