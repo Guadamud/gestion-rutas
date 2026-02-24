@@ -771,8 +771,8 @@ const DuenoBusPage = () => {
     const saldoDistribuido = conductores.reduce((sum, c) => sum + parseFloat(c.saldo || 0), 0);
     const totalFrecuencias = conductores.reduce((sum, c) => sum + (c.totalFrecuencias || 0), 0);
     const totalIngresos = conductores.reduce((sum, c) => sum + parseFloat(c.ingresosTotales || 0), 0);
-    // Gastos totales = saldo actualmente en conductores + lo que los conductores ya cobraron/gastaron
-    const totalGastos = saldoDistribuido + totalIngresos;
+    // Gastos = solo los cobros de frecuencias realizados por los conductores
+    const totalGastos = totalIngresos;
     
     return { saldoDuenoBus, saldoDistribuido, totalFrecuencias, totalIngresos, totalGastos };
   };
