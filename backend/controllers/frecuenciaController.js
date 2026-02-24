@@ -300,8 +300,47 @@ const deleteFrecuencia = async (req, res) => {
   res.json({ message: "Frecuencia eliminada correctamente" });
 };
 
+const getFrecuenciaById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.rol;
+
+    const frecuencia = await Frecuencia.findByPk(id, {
+      include: [
+        { model: Bus, required: false },
+        { model: Conductor, required: false }
+      ]
+    });
+
+    if (!frecuencia) {
+      return res.status(404).json({ message: "Frecuencia no encontrada" });
+    }
+
+    // Cargar ruta manualmente
+    if (frecuencia.rutaId) {
+      const ruta = await Ruta.findByPk(frecuencia.rutaId);
+      frecuencia.dataValues.Ruta = ruta;
+    }
+
+    // Control de acceso: conductor solo puede ver sus propias frecuencias
+    if (userRole === 'conductor') {
+      const conductor = await Conductor.findOne({ where: { usuarioId: userId } });
+      if (!conductor || frecuencia.conductorId !== conductor.id) {
+        return res.status(403).json({ message: "Acceso denegado" });
+      }
+    }
+
+    res.json(frecuencia);
+  } catch (error) {
+    console.error('Error en getFrecuenciaById:', error);
+    res.status(500).json({ message: "Error al obtener la frecuencia" });
+  }
+};
+
 module.exports = {
   getFrecuencias,
+  getFrecuenciaById,
   createFrecuencia,
   updateFrecuencia,
   deleteFrecuencia,

@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import { professionalColors } from '../utils/professionalColors';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Box, Typography, Divider, Chip, Alert
 } from '@mui/material';
-import {
-  QrCode2, CheckCircle, Print, Download
-} from '@mui/icons-material';
-import { professionalColors } from '../utils/professionalColors';
+import { QrCode2, CheckCircle, Print, Download, HourglassEmpty } from '@mui/icons-material';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const POLL_INTERVAL = 3000; // 3 segundos
 
 // Función para convertir hora de 24h a 12h AM/PM
 const convertirHoraAMPM = (hora24) => {
@@ -18,16 +20,70 @@ const convertirHoraAMPM = (hora24) => {
   return `${h12}:${minutos} ${ampm}`;
 };
 
-const QRTicketDialog = ({ open, onClose, frecuencia }) => {
+const QRTicketDialog = ({ open, onClose, frecuencia, onVerificado }) => {
+  const [frecuenciaLocal, setFrecuenciaLocal] = useState(frecuencia);
+  const pollingRef = useRef(null);
+
+  // Sincroniza estado local cuando cambia la prop (ej. al abrir con nueva frecuencia)
+  useEffect(() => {
+    setFrecuenciaLocal(frecuencia);
+  }, [frecuencia]);
+
+  // Polling: consulta el estado cada 3s mientras el diálogo está abierto y no está "usado"
+  useEffect(() => {
+    const detener = () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+
+    if (!open || !frecuencia) {
+      detener();
+      return;
+    }
+
+    if (frecuencia.estadoVerificacion === 'usado') {
+      detener();
+      return;
+    }
+
+    const consultar = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const resp = await axios.get(`${API_URL}/api/frecuencias/${frecuencia.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const actualizada = resp.data;
+        setFrecuenciaLocal(actualizada);
+
+        if (actualizada.estadoVerificacion === 'usado') {
+          detener();
+          if (onVerificado) onVerificado(actualizada);
+        }
+      } catch (err) {
+        // Ignorar errores de polling silenciosamente
+      }
+    };
+
+    pollingRef.current = setInterval(consultar, POLL_INTERVAL);
+
+    return detener;
+  }, [open, frecuencia?.id, frecuencia?.estadoVerificacion]);
+
+  // Alias conveniente — usa la versión local (más actualizada)
+  const frec = frecuenciaLocal || frecuencia;
+
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
-    const qrImage = frecuencia.qrCode;
+    const qrImage = frec.qrCode;
     
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Ticket - ${frecuencia.ticketId}</title>
+          <title>Ticket - ${frec.ticketId}</title>
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -111,32 +167,32 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
             <div class="info">
               <div class="info-row">
                 <span class="label">📅 Fecha:</span>
-                <span class="value">${frecuencia.fecha.split('-').reverse().join('/')}</span>
+                <span class="value">${frec.fecha.split('-').reverse().join('/')}</span>
               </div>
               <div class="info-row">
                 <span class="label">⏰ Hora Salida:</span>
-                <span class="value">${convertirHoraAMPM(frecuencia.horaSalida)}</span>
+                <span class="value">${convertirHoraAMPM(frec.horaSalida)}</span>
               </div>
-              ${frecuencia.Ruta ? `
+              ${frec.Ruta ? `
                 <div class="info-row">
                   <span class="label">🛣️ Ruta:</span>
-                  <span class="value">${frecuencia.Ruta.origen} → ${frecuencia.Ruta.destino}</span>
+                  <span class="value">${frec.Ruta.origen} → ${frec.Ruta.destino}</span>
                 </div>
                 <div class="info-row">
                   <span class="label">💵 Precio:</span>
-                  <span class="value">$${parseFloat(frecuencia.Ruta.precio || 0).toFixed(2)}</span>
+                  <span class="value">$${parseFloat(frec.Ruta.precio || 0).toFixed(2)}</span>
                 </div>
               ` : ''}
-              ${frecuencia.Bus ? `
+              ${frec.Bus ? `
                 <div class="info-row">
                   <span class="label">🚌 Bus:</span>
-                  <span class="value">${frecuencia.Bus.placa}</span>
+                  <span class="value">${frec.Bus.placa}</span>
                 </div>
               ` : ''}
-              ${frecuencia.Conductor ? `
+              ${frec.Conductor ? `
                 <div class="info-row">
                   <span class="label">👤 Conductor:</span>
-                  <span class="value">${frecuencia.Conductor.nombre}</span>
+                  <span class="value">${frec.Conductor.nombre}</span>
                 </div>
               ` : ''}
             </div>
@@ -150,7 +206,7 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
             
             <div class="ticket-id">
               <strong>ID del Ticket:</strong><br/>
-              ${frecuencia.ticketId}
+              ${frec.ticketId}
             </div>
             
             <div class="footer">
@@ -171,12 +227,12 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = frecuencia.qrCode;
-    link.download = `ticket-${frecuencia.ticketId}.png`;
+    link.href = frec.qrCode;
+    link.download = `ticket-${frec.ticketId}.png`;
     link.click();
   };
 
-  if (!frecuencia) return null;
+  if (!frec) return null;
 
   const getEstadoColor = (estado) => {
     switch(estado) {
@@ -203,11 +259,16 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
       <DialogContent sx={{ mt: 2 }}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Chip 
-            label={frecuencia.estadoVerificacion?.toUpperCase() || 'PENDIENTE'}
-            color={getEstadoColor(frecuencia.estadoVerificacion)}
-            icon={frecuencia.estadoVerificacion === 'usado' ? <CheckCircle /> : <QrCode2 />}
-            sx={{ mb: 2, fontWeight: 'bold' }}
+            label={frec.estadoVerificacion?.toUpperCase() || 'PENDIENTE'}
+            color={getEstadoColor(frec.estadoVerificacion)}
+            icon={frec.estadoVerificacion === 'usado' ? <CheckCircle /> : <HourglassEmpty />}
+            sx={{ mb: 2, fontWeight: 'bold', fontSize: '0.9rem', py: 2 }}
           />
+          {frec.estadoVerificacion !== 'usado' && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+              Actualizando automáticamente...
+            </Typography>
+          )}
         </Box>
 
         <Box sx={{ 
@@ -219,7 +280,7 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
           borderRadius: 2
         }}>
           <img 
-            src={frecuencia.qrCode} 
+            src={frec.qrCode} 
             alt="Código QR" 
             style={{ 
               width: 250, 
@@ -240,29 +301,29 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
           </Typography>
           <Box sx={{ mt: 1, p: 2, bgcolor: '#f9f9f9', borderRadius: 1 }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
-              <strong>📅 Fecha:</strong> {frecuencia.fecha.split('-').reverse().join('/')}
+              <strong>📅 Fecha:</strong> {frec.fecha.split('-').reverse().join('/')}
             </Typography>
             <Typography variant="body2" sx={{ mb: 1 }}>
-              <strong>⏰ Hora de Salida:</strong> {convertirHoraAMPM(frecuencia.horaSalida)}
+              <strong>⏰ Hora de Salida:</strong> {convertirHoraAMPM(frec.horaSalida)}
             </Typography>
-            {frecuencia.Ruta && (
+            {frec.Ruta && (
               <>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>🛣️ Ruta:</strong> {frecuencia.Ruta.origen} → {frecuencia.Ruta.destino}
+                  <strong>🛣️ Ruta:</strong> {frec.Ruta.origen} → {frec.Ruta.destino}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>💵 Precio:</strong> ${parseFloat(frecuencia.Ruta.precio || 0).toFixed(2)}
+                  <strong>💵 Precio:</strong> ${parseFloat(frec.Ruta.precio || 0).toFixed(2)}
                 </Typography>
               </>
             )}
-            {frecuencia.Bus && (
+            {frec.Bus && (
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>🚌 Bus:</strong> {frecuencia.Bus.placa}
+                <strong>🚌 Bus:</strong> {frec.Bus.placa}
               </Typography>
             )}
-            {frecuencia.Conductor && (
+            {frec.Conductor && (
               <Typography variant="body2">
-                <strong>👤 Conductor:</strong> {frecuencia.Conductor.nombre}
+                <strong>👤 Conductor:</strong> {frec.Conductor.nombre}
               </Typography>
             )}
           </Box>
@@ -275,14 +336,14 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
         </Alert>
 
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, wordBreak: 'break-all' }}>
-          <strong>ID del Ticket:</strong> {frecuencia.ticketId}
+          <strong>ID del Ticket:</strong> {frec.ticketId}
         </Typography>
 
-        {frecuencia.estadoVerificacion === 'usado' && frecuencia.fechaVerificacion && (
+        {frec.estadoVerificacion === 'usado' && frec.fechaVerificacion && (
           <Alert severity="success" sx={{ mt: 2 }}>
             <Typography variant="body2">
               ✓ Verificado el {(() => {
-                const fecha = new Date(frecuencia.fechaVerificacion);
+                const fecha = new Date(frec.fechaVerificacion);
                 if (isNaN(fecha.getTime())) return 'fecha no disponible';
                 return fecha.toLocaleString('es-ES', {
                   day: '2-digit',
@@ -303,7 +364,7 @@ const QRTicketDialog = ({ open, onClose, frecuencia }) => {
           onClick={handleDownload} 
           startIcon={<Download />}
           variant="outlined"
-          disabled={frecuencia.estadoVerificacion === 'usado'}
+          disabled={frec.estadoVerificacion === 'usado'}
         >
           Descargar QR
         </Button>

@@ -768,6 +768,10 @@ const ConductorPage = () => {
         open={openQRDialog}
         onClose={() => setOpenQRDialog(false)}
         frecuencia={selectedFrecuencia}
+        onVerificado={(actualizada) => {
+          setSelectedFrecuencia(actualizada);
+          setFrecuencias(prev => prev.map(f => f.id === actualizada.id ? actualizada : f));
+        }}
       />
 
       <CustomSnackbar
