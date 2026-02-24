@@ -1272,11 +1272,8 @@ const TesoreriaPage = () => {
     return fechaSol === fechaSeleccionada && !sol.incluidoEnCierreId;
   });
 
-  // Filtrar por déa actual
-  const fechaHoy = (() => {
-    const hoy = new Date();
-    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-  })();
+  // Filtrar por día actual (UTC para ser consistente con timestamps guardados)
+  const fechaHoy = new Date().toISOString().split('T')[0];
   
   // Combinar solicitudes pendientes con el historial para estadésticas del déa
   const todasLasSolicitudes = [...solicitudes, ...historialSolicitudes];
@@ -1284,7 +1281,9 @@ const TesoreriaPage = () => {
   // Si ya existe un cierre para hoy, mostrar ceros
   // Mostrar todas las solicitudes del déa (el backend ya filtra las pendientes)
   const solicitudesHoy = todasLasSolicitudes.filter(sol => {
-    const fechaSol = new Date(sol.fecha).toISOString().split('T')[0];
+    const fechaStr = sol.fecha || sol.createdAt;
+    if (!fechaStr) return false;
+    const fechaSol = new Date(fechaStr).toISOString().split('T')[0];
     return fechaSol === fechaHoy;
   });
 

@@ -304,12 +304,10 @@ exports.getHistorialSolicitudes = async (req, res) => {
     
     const whereCondition = { 
       tipo: "solicitud_compra",
-      estado: "aprobada", // Solo aprobadas
-      aprobadoPorId: userId // SIEMPRE filtrar por el usuario actual
+      estado: "aprobada" // Todas las aprobadas, sin importar quién las aprobó
     };
     
-    // Mostrar TODAS las solicitudes aprobadas por el usuario (cerradas y sin cerrar)
-    // Ya no filtramos por incluidoEnCierreId
+    // Mostrar TODAS las solicitudes aprobadas (cerradas y sin cerrar)
     
     const solicitudes = await Transaccion.findAll({
       where: whereCondition,
