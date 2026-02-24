@@ -98,13 +98,10 @@ const Dashboard = () => {
         f.estadoVerificacion === 'verificado' || f.estadoVerificacion === 'usado' || f.estado === 'completada' || f.estado === 'pagado'
       ).length;
 
-      // Tasa de ocupación (frecuencias activas vs capacidad total)
+      // Tasa de ocupación (frecuencias de hoy vs total buses activos)
       const busesActivos = buses.filter(b => b.estado === 'activo' || b.estado === 'Activo').length;
-      const frecuenciasEnCurso = frecuencias.filter(f => 
-        f.estadoVerificacion === 'verificado' || f.estado === 'en_curso' || f.estado === 'activa'
-      ).length;
       const tasaOcupacion = busesActivos > 0 ? 
-        Math.min(100, (frecuenciasEnCurso / busesActivos) * 100) : 0;
+        Math.min(100, (frecuenciasHoy / busesActivos) * 100) : 0;
 
       // Eficiencia operativa (completadas vs total)
       const eficienciaOperativa = frecuencias.length > 0 ? 
