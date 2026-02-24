@@ -129,12 +129,15 @@ const QRScanner = ({ open, onClose, onScan }) => {
 
   const stopScanner = async () => {
     if (scannerRef.current) {
+      const scanner = scannerRef.current;
+      scannerRef.current = null; // limpiar antes del await para evitar doble stop
       try {
-        await scannerRef.current.stop();
-        scannerRef.current = null;
+        if (scanner.isScanning) {
+          await scanner.stop();
+        }
         setScanning(false);
       } catch (err) {
-        console.error('Error al detener escáner:', err);
+        // ignorar errores de stop cuando ya no estaba activo
       }
     }
   };

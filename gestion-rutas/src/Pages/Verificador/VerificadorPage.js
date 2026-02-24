@@ -89,8 +89,9 @@ const VerificadorPage = () => {
     }
   };
 
-  const verificarTicket = async () => {
-    if (!ticketId.trim()) {
+  const verificarTicket = async (idDirecto) => {
+    const idAVerificar = idDirecto || ticketId.trim();
+    if (!idAVerificar) {
       mostrarAlerta('Por favor ingrese el ID del ticket', 'warning');
       return;
     }
@@ -100,7 +101,7 @@ const VerificadorPage = () => {
       const token = localStorage.getItem('token');
       const response = await axios.post(
         `${API_URL}/api/verificacion/verificar`,
-        { ticketId: ticketId.trim() },
+        { ticketId: idAVerificar },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -134,10 +135,8 @@ const VerificadorPage = () => {
   const handleScanSuccess = (scannedTicketId) => {
     setTicketId(scannedTicketId);
     setOpenScanner(false);
-    // Verificar automáticamente después de escanear
-    setTimeout(() => {
-      verificarTicket();
-    }, 500);
+    // Verificar automáticamente usando el id directo (evita stale closure)
+    verificarTicket(scannedTicketId);
   };
 
   const getEstadoChip = (estado) => {
