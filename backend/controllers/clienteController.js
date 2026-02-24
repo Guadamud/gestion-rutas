@@ -478,7 +478,7 @@ exports.getRecargasConductores = async (req, res) => {
     // Obtener todos los conductores del cliente
     const conductores = await Conductor.findAll({
       where: { clienteId: id },
-      attributes: ['id', 'nombres', 'apellidos', 'cedula']
+      attributes: ['id', 'nombre', 'cedula']
     });
 
     console.log(`📊 getRecargasConductores clienteId=${id}: ${conductores.length} conductores encontrados`);
@@ -507,7 +507,7 @@ exports.getRecargasConductores = async (req, res) => {
       return {
         id: r.id,
         conductorId: r.conductorId,
-        conductorNombre: cond ? `${cond.nombres} ${cond.apellidos}` : 'N/A',
+        conductorNombre: cond ? cond.nombre : 'N/A',
         conductorCedula: cond ? cond.cedula : 'N/A',
         monto: r.monto,
         metodoPago: r.metodoPago,
