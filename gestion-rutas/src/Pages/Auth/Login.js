@@ -148,7 +148,8 @@ const Login = () => {
             sx={{
               background: `linear-gradient(135deg, ${professionalColors.primary[500]} 0%, ${professionalColors.primary[600]} 100%)`,
               color: professionalColors.text.inverse,
-              py: { xs: 2, sm: 2.5 },
+              pt: { xs: 2, sm: 2.5 },
+              pb: { xs: 1.5, sm: 2 },
               px: { xs: 2, sm: 3 },
               textAlign: 'center'
             }}
@@ -158,20 +159,19 @@ const Login = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mb: 1
+                mb: 0
               }}
             >
               <img
                 src={logoPajan}
                 alt="Logo Paján"
-                style={{ width: 220, height: 220, objectFit: 'contain' }}
+                style={{ width: 240, height: 240, objectFit: 'contain' }}
               />
             </Box>
             <Typography 
               variant="h4" 
               fontWeight="600" 
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+              sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' }, mb: 0.5 }}
             >
               Sistema de Rutas
             </Typography>

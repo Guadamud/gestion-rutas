@@ -139,7 +139,8 @@ const Register = () => {
             sx={{
               background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
               color: 'white',
-              py: 2.5,
+              pt: 2.5,
+              pb: 2,
               px: 3,
               textAlign: 'center'
             }}
@@ -149,16 +150,16 @@ const Register = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mb: 1
+                mb: 0
               }}
             >
               <img
                 src={logoPajan}
                 alt="Logo Paján"
-                style={{ width: 220, height: 220, objectFit: 'contain' }}
+                style={{ width: 240, height: 240, objectFit: 'contain' }}
               />
             </Box>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5 }}>
               Únete al Sistema
             </Typography>
             <Typography variant="body1" sx={{ opacity: 0.9 }}>
