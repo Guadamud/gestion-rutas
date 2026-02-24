@@ -767,12 +767,14 @@ const DuenoBusPage = () => {
 
   // Cálculos
   const calcularTotales = () => {
-    const saldoDuenoBus = parseFloat(duenoBus?.saldo || 0); // Saldo disponible del duenoBus
-    const saldoDistribuido = conductores.reduce((sum, c) => sum + parseFloat(c.saldo || 0), 0); // Saldo en conductores
+    const saldoDuenoBus = parseFloat(duenoBus?.saldo || 0);
+    const saldoDistribuido = conductores.reduce((sum, c) => sum + parseFloat(c.saldo || 0), 0);
     const totalFrecuencias = conductores.reduce((sum, c) => sum + (c.totalFrecuencias || 0), 0);
     const totalIngresos = conductores.reduce((sum, c) => sum + parseFloat(c.ingresosTotales || 0), 0);
+    // Gastos totales = saldo actualmente en conductores + lo que los conductores ya cobraron/gastaron
+    const totalGastos = saldoDistribuido + totalIngresos;
     
-    return { saldoDuenoBus, saldoDistribuido, totalFrecuencias, totalIngresos };
+    return { saldoDuenoBus, saldoDistribuido, totalFrecuencias, totalIngresos, totalGastos };
   };
 
   const totales = calcularTotales();
@@ -877,7 +879,7 @@ const DuenoBusPage = () => {
               </Typography>
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 600, color: colors.text.primary }}>
-              ${totales.totalIngresos.toFixed(2)}
+              ${totales.totalGastos.toFixed(2)}
             </Typography>
           </CardContent>
         </Card>
