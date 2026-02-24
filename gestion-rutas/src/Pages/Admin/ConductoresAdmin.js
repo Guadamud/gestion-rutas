@@ -44,7 +44,9 @@ import {
   Badge as BadgeIcon,
   DriveEta,
   CheckCircle,
-  Cancel
+  Cancel,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import CustomSnackbar from '../../components/CustomSnackbar';
 import { jsPDF } from 'jspdf';
@@ -58,12 +60,14 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const ConductoresAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [conductores, setConductores] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingConductor, setEditingConductor] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(0);
   const [formData, setFormData] = useState({
     nombre: '',
     cedula: '',
@@ -344,6 +348,13 @@ const ConductoresAdmin = () => {
     c.clienteNombre?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  useEffect(() => { setPaginaActual(0); }, [searchTerm]);
+  const totalPaginas = Math.ceil(filteredConductores.length / ITEMS_POR_PAGINA);
+  const conductoresPagina = filteredConductores.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
+  );
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default', py: 4 }}>
       <Container maxWidth="xl">
@@ -484,11 +495,11 @@ const ConductoresAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredConductores.map((conductor, index) => (
+                  {conductoresPagina.map((conductor, index) => (
                     <TableRow key={conductor.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          #{index + 1}
+                          #{paginaActual * ITEMS_POR_PAGINA + index + 1}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -573,6 +584,21 @@ const ConductoresAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton onClick={() => setPaginaActual(p => p - 1)} disabled={paginaActual === 0} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {filteredConductores.length} conductores
+                </Typography>
+                <IconButton onClick={() => setPaginaActual(p => p + 1)} disabled={paginaActual >= totalPaginas - 1} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 

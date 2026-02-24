@@ -39,7 +39,9 @@ import {
   Refresh,
   AccessTime,
   AttachMoney,
-  Straighten
+  Straighten,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import axios from 'axios';
 import CustomSnackbar from '../../components/CustomSnackbar';
@@ -52,6 +54,7 @@ import { saveAs } from 'file-saver';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const RutasAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [rutas, setRutas] = useState([]);
   const [origen, setOrigen] = useState('');
   const [destino, setDestino] = useState('');
@@ -62,6 +65,7 @@ const RutasAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(0);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -229,6 +233,13 @@ const RutasAdmin = () => {
   const filteredRutas = rutas.filter(ruta =>
     ruta.origen.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ruta.destino.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  useEffect(() => { setPaginaActual(0); }, [searchTerm]);
+  const totalPaginas = Math.ceil(filteredRutas.length / ITEMS_POR_PAGINA);
+  const rutasPagina = filteredRutas.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
   );
 
   return (
@@ -419,11 +430,11 @@ const RutasAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredRutas.map((ruta, index) => (
+                  {rutasPagina.map((ruta, index) => (
                     <TableRow key={ruta.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          #{index + 1}
+                          #{paginaActual * ITEMS_POR_PAGINA + index + 1}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -505,6 +516,21 @@ const RutasAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton onClick={() => setPaginaActual(p => p - 1)} disabled={paginaActual === 0} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {filteredRutas.length} rutas
+                </Typography>
+                <IconButton onClick={() => setPaginaActual(p => p + 1)} disabled={paginaActual >= totalPaginas - 1} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 

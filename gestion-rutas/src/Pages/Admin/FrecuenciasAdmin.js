@@ -18,7 +18,9 @@ import {
   Upload,
   Refresh,
   AccessTime,
-  Visibility
+  Visibility,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import axios from 'axios';
 import CustomSnackbar from '../../components/CustomSnackbar';
@@ -50,12 +52,14 @@ const obtenerFechaLocal = () => {
 };
 
 const FrecuenciasAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [frecuencias, setFrecuencias] = useState([]);
   const [rutas, setRutas] = useState([]);
   const [buses, setBuses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroFecha, setFiltroFecha] = useState(obtenerFechaLocal());
   const [openDialog, setOpenDialog] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(0);
   const [openDetalleDialog, setOpenDetalleDialog] = useState(false);
   const [frecuenciaDetalle, setFrecuenciaDetalle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -240,6 +244,13 @@ const FrecuenciasAdmin = () => {
     return matchSearch && matchFecha;
   });
 
+  useEffect(() => { setPaginaActual(0); }, [searchTerm, filtroFecha]);
+  const totalPaginas = Math.ceil(filteredFrecuencias.length / ITEMS_POR_PAGINA);
+  const frecuenciasPagina = filteredFrecuencias.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
+  );
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default', py: 4 }}>
       <Container maxWidth="xl">
@@ -360,11 +371,11 @@ const FrecuenciasAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredFrecuencias.map((frec, index) => (
+                  {frecuenciasPagina.map((frec, index) => (
                     <TableRow key={frec.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          #{index + 1}
+                          #{paginaActual * ITEMS_POR_PAGINA + index + 1}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -449,6 +460,21 @@ const FrecuenciasAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton onClick={() => setPaginaActual(p => p - 1)} disabled={paginaActual === 0} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {filteredFrecuencias.length} frecuencias
+                </Typography>
+                <IconButton onClick={() => setPaginaActual(p => p + 1)} disabled={paginaActual >= totalPaginas - 1} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 

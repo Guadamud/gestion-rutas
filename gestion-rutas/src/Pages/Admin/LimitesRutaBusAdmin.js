@@ -35,7 +35,9 @@ import {
   Edit,
   DirectionsBus,
   Route as RouteIcon,
-  Settings
+  Settings,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import Stack from '@mui/material/Stack';
 import axios from 'axios';
@@ -44,11 +46,13 @@ import CustomSnackbar from '../../components/CustomSnackbar';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const LimitesRutaBusAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [limites, setLimites] = useState([]);
   const [buses, setBuses] = useState([]);
   const [rutas, setRutas] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(0);
   const [formData, setFormData] = useState({
     busId: '',
     rutaId: '',
@@ -92,6 +96,12 @@ const LimitesRutaBusAdmin = () => {
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  const totalPaginas = Math.ceil(limites.length / ITEMS_POR_PAGINA);
+  const limitesPagina = limites.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
+  );
 
   const guardarLimite = async () => {
     if (!formData.busId || !formData.rutaId || !formData.limiteDiario) {
@@ -249,9 +259,9 @@ const LimitesRutaBusAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {limites.map((limite, index) => (
+                  {limitesPagina.map((limite, index) => (
                     <TableRow key={limite.id} hover>
-                      <TableCell>#{index + 1}</TableCell>
+                      <TableCell>#{paginaActual * ITEMS_POR_PAGINA + index + 1}</TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <DirectionsBus sx={{ mr: 1, color: 'primary.main' }} />
@@ -300,6 +310,21 @@ const LimitesRutaBusAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton onClick={() => setPaginaActual(p => p - 1)} disabled={paginaActual === 0} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {limites.length} límites
+                </Typography>
+                <IconButton onClick={() => setPaginaActual(p => p + 1)} disabled={paginaActual >= totalPaginas - 1} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 

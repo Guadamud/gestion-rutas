@@ -41,7 +41,9 @@ import {
   Download,
   Upload,
   Refresh,
-  Delete
+  Delete,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import Stack from '@mui/material/Stack';
 import axios from 'axios';
@@ -55,6 +57,7 @@ import { saveAs } from 'file-saver';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const BusesAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [buses, setBuses] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [cooperativas, setCooperativas] = useState([]);
@@ -68,6 +71,7 @@ const BusesAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(0);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -291,6 +295,13 @@ const BusesAdmin = () => {
     bus.empresa.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  useEffect(() => { setPaginaActual(0); }, [searchTerm]);
+  const totalPaginas = Math.ceil(filteredBuses.length / ITEMS_POR_PAGINA);
+  const busesPagina = filteredBuses.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
+  );
+
   return (
     <Box
       sx={{
@@ -503,11 +514,11 @@ const BusesAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredBuses.map((bus, index) => (
+                  {busesPagina.map((bus, index) => (
                     <TableRow key={bus.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          #{index + 1}
+                          #{paginaActual * ITEMS_POR_PAGINA + index + 1}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -586,6 +597,21 @@ const BusesAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton onClick={() => setPaginaActual(p => p - 1)} disabled={paginaActual === 0} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {filteredBuses.length} buses
+                </Typography>
+                <IconButton onClick={() => setPaginaActual(p => p + 1)} disabled={paginaActual >= totalPaginas - 1} size="small" sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}>
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 
