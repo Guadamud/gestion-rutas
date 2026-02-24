@@ -190,6 +190,21 @@ const Navbar = () => {
       <Divider />
 
       <List sx={{ px: 1, py: 1 }}>
+        {/* Botón Inicio — siempre visible para usuarios autenticados */}
+        {user && (
+          <ListItemButton
+            component={Link}
+            to={getMainRoute()}
+            onClick={() => setMobileOpen(false)}
+            sx={{ borderRadius: 2, mb: 1 }}
+          >
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Inicio" />
+          </ListItemButton>
+        )}
+
         {/* Menú de administrador */}
         {user?.rol === 'admin' && (
           <>
@@ -298,6 +313,9 @@ const Navbar = () => {
               <ScheduleIcon />
             </ListItemIcon>
             <ListItemText primary="Mis Frecuencias" />
+          </ListItemButton>
+        )}
+
         {/* Menú de verificador */}
         {user?.rol === 'verificador' && (
           <ListItemButton
@@ -310,9 +328,6 @@ const Navbar = () => {
               <QrCodeScannerIcon />
             </ListItemIcon>
             <ListItemText primary="Verificar Tickets" />
-          </ListItemButton>
-        )}
-
           </ListItemButton>
         )}
 
