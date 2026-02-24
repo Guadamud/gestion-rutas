@@ -619,6 +619,7 @@ const ConductoresAdmin = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <Autocomplete
+                    fullWidth
                     options={clientes}
                     value={clienteSeleccionado}
                     onChange={(_, value) => {

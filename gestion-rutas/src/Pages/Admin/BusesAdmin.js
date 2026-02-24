@@ -666,6 +666,7 @@ const BusesAdmin = () => {
                 InputLabelProps={{ shrink: true }}
               />
               <Autocomplete
+                fullWidth
                 options={clientes}
                 value={clienteSeleccionado}
                 onChange={(_, value) => {
@@ -699,6 +700,7 @@ const BusesAdmin = () => {
                 noOptionsText="Sin resultados"
               />
               <Autocomplete
+                fullWidth
                 options={cooperativas.filter(c => c.estado === 'activo')}
                 value={cooperativaSeleccionada}
                 onChange={(_, value) => {
