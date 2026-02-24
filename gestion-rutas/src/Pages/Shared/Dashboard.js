@@ -60,7 +60,9 @@ const Dashboard = () => {
       const rutas = Array.isArray(rutasResp.data) ? rutasResp.data : [];
       const frecuencias = Array.isArray(frecuenciasResp.data) ? frecuenciasResp.data : [];
       const usuarios = Array.isArray(usuariosResp.data) ? usuariosResp.data : [];
-      const conductores = Array.isArray(conductoresResp.data) ? conductoresResp.data : [];
+      // El endpoint /conductores devuelve clientes con Conductors[] anidados - aplanar para obtener conductores reales
+      const conductoresRaw = Array.isArray(conductoresResp.data) ? conductoresResp.data : [];
+      const conductores = conductoresRaw.flatMap(c => c.Conductors || []);
 
       console.log('Datos cargados:', { 
         buses: buses.length, 
