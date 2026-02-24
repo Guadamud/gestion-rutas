@@ -162,6 +162,7 @@ const BusesAdmin = () => {
       setCooperativaSeleccionada(null);
       setEditId(null);
       setOpenDialog(false);
+    } catch (error) {
       console.error('Error al guardar bus:', error);
       mostrarAlerta(error.response?.data?.message || 'Error al guardar bus', 'error');
     }
