@@ -616,40 +616,48 @@ const ConductoresAdmin = () => {
           </DialogTitle>
           <DialogContent>
             <Box sx={{ pt: 2 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Autocomplete
-                    fullWidth
-                    options={clientes}
-                    value={clienteSeleccionado}
-                    onChange={(_, value) => {
-                      setClienteSeleccionado(value);
-                      setFormData({ ...formData, clienteId: value ? value.id : '' });
-                      if (errors.clienteId) setErrors({ ...errors, clienteId: null });
-                    }}
-                    getOptionLabel={(option) => `${option.nombres} ${option.apellidos}`}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    renderOption={(props, option) => (
-                      <li {...props} key={option.id}>
-                        <Typography variant="body2">
-                          <strong>{option.nombres} {option.apellidos}</strong>
-                          {option.email && <span style={{ color: '#888', marginLeft: 8 }}>— {option.email}</span>}
+              {/* Cliente — fuera del Grid para garantizar ancho completo */}
+              <Box sx={{ mb: 3 }}>
+                <Autocomplete
+                  sx={{ width: '100%' }}
+                  options={clientes}
+                  value={clienteSeleccionado}
+                  onChange={(_, value) => {
+                    setClienteSeleccionado(value);
+                    setFormData({ ...formData, clienteId: value ? value.id : '' });
+                    if (errors.clienteId) setErrors({ ...errors, clienteId: null });
+                  }}
+                  getOptionLabel={(option) => `${option.nombres} ${option.apellidos}`}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.id}>
+                      <Box>
+                        <Typography variant="body2" fontWeight={600}>
+                          {option.nombres} {option.apellidos}
                         </Typography>
-                      </li>
-                    )}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Cliente *"
-                        placeholder="Buscar cliente..."
-                        error={!!errors.clienteId}
-                        helperText={errors.clienteId}
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    )}
-                    noOptionsText="Sin resultados"
-                  />
-                </Grid>
+                        {option.email && (
+                          <Typography variant="caption" color="text.secondary">
+                            {option.email}
+                          </Typography>
+                        )}
+                      </Box>
+                    </li>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      label="Cliente *"
+                      placeholder="Buscar cliente por nombre..."
+                      error={!!errors.clienteId}
+                      helperText={errors.clienteId}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  )}
+                  noOptionsText="Sin resultados"
+                />
+              </Box>
+              <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
