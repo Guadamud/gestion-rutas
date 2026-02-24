@@ -66,6 +66,7 @@ app.use(paginationMiddleware);
 // Rutas
 app.use("/api/setup", setupRoutes); // Ruta temporal para setup inicial
 app.use("/auth", authRoutes);
+app.use("/api", authRoutes); // alias para rutas como /api/usuarios/:id/preferencias-tema
 app.use("/api/frecuencias", frecuenciaRoutes);
 app.use("/api/rutas", rutaRoutes);
 app.use("/api/buses", busRoutes);
