@@ -348,7 +348,7 @@ const UsuariosAdmin = () => {
         </Grid>
 
         {/* Stats Cards */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Card elevation={1} sx={{ minHeight: 140, flex: '0 0 calc(15% - 16px)', minWidth: 160, maxWidth: 'calc(15% - 16px)', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ textAlign: 'center', py: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Box sx={{ backgroundColor: 'primary.main', color: 'white', borderRadius: 2, p: 1, display: 'inline-flex', mb: 2, alignSelf: 'center' }}>
