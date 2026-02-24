@@ -725,7 +725,7 @@ const TesoreriaPage = () => {
       yPos += 8;
       
       // ===== TABLA DE SOLICITUDES =====
-      const tableData = solicitudes.map(s => [
+      const tableData = [...solicitudes].sort((a, b) => a.id - b.id).map(s => [
         s.id,
         s.Cliente ? `${s.Cliente.nombres} ${s.Cliente.apellidos}` : 'N/A',
         `$${parseFloat(s.monto).toFixed(2)}`,
@@ -1012,8 +1012,8 @@ const TesoreriaPage = () => {
         };
       });
 
-      // Agregar datos con formato alternado
-      solicitudes.forEach((s, index) => {
+      // Agregar datos con formato alternado (ordenados por ID)
+      [...solicitudes].sort((a, b) => a.id - b.id).forEach((s, index) => {
         const row = worksheet.addRow([
           s.id,
           s.Cliente ? `${s.Cliente.nombres} ${s.Cliente.apellidos}` : 'N/A',
