@@ -312,18 +312,6 @@ const FrecuenciasAdmin = () => {
               sx={{ backgroundColor: 'white' }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<Add />}
-              onClick={abrirDialog}
-              size="large"
-              sx={{ height: '56px' }}
-            >
-              Nueva Frecuencia
-            </Button>
-          </Grid>
         </Grid>
 
         {/* Stats Cards */}
