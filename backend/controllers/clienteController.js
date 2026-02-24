@@ -440,10 +440,13 @@ exports.getTransaccionesCompra = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const { Op } = require('sequelize');
+    // Solo las solicitudes hechas por el propio cliente (no por conductor)
     const transacciones = await Transaccion.findAll({
       where: {
         clienteId: id,
-        tipo: 'solicitud_compra'
+        tipo: 'solicitud_compra',
+        solicitadoPor: 'cliente'
       },
       order: [['createdAt', 'DESC']]
     });
@@ -491,16 +494,20 @@ exports.getRecargasConductores = async (req, res) => {
     const conductorMap = {};
     conductores.forEach(c => { conductorMap[c.id] = c; });
 
-    // Buscar recargas SIN filtrar por clienteId (por si acaso no se guardó)
+    // Buscar recargas directas Y solicitudes_compra hechas por el conductor en nombre del cliente
     const recargas = await Transaccion.findAll({
       where: {
-        conductorId: { [Op.in]: conductorIds },
-        tipo: 'recarga'
+        [Op.or]: [
+          // Recargas directas al conductor
+          { conductorId: { [Op.in]: conductorIds }, tipo: 'recarga' },
+          // Solicitudes de compra iniciadas por el conductor para el cliente
+          { clienteId: id, tipo: 'solicitud_compra', solicitadoPor: 'conductor' }
+        ]
       },
       order: [['createdAt', 'DESC']]
     });
 
-    console.log(`📊 getRecargasConductores clienteId=${id}: ${recargas.length} recargas encontradas`);
+    console.log(`📊 getRecargasConductores clienteId=${id}: ${recargas.length} registros encontrados`);
 
     const recargasFormateadas = recargas.map(r => {
       const cond = conductorMap[r.conductorId];
