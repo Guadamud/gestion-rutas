@@ -388,11 +388,11 @@ router.post("/configurar-limpieza-automatica", verifyToken, authorizeRoles("admi
  */
 router.post("/ejecutar-limpieza-gradual", verifyToken, authorizeRoles("admin"), async (req, res) => {
   try {
-    const config = await ConfiguracionMantenimiento.findOne();
+    let config = await ConfiguracionMantenimiento.findOne();
     
-    if (!config || !config.limpieza_automatica_activa) {
+    if (!config) {
       return res.status(400).json({ 
-        message: "La limpieza automática no está activada" 
+        message: "No hay configuración de mantenimiento. Guarda la configuración primero." 
       });
     }
 
