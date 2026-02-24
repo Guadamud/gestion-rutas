@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useAutoAlert from '../../hooks/useAutoAlert';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
 import { professionalColors } from '../../utils/professionalColors';
@@ -38,8 +39,8 @@ const Login = () => {
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useAutoAlert(10000);
+  const [success, setSuccess] = useAutoAlert(10000);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 

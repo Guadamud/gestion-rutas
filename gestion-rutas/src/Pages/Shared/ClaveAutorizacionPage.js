@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useAutoAlert from '../../hooks/useAutoAlert';
 import {
   Container, Typography, Card, CardContent, Box,
   Button, Grid, TextField, Alert, CircularProgress,
@@ -22,8 +23,8 @@ const ClaveAutorizacionPage = () => {
   const [claveConfigurada, setClaveConfigurada] = useState(false);
   const [showClave, setShowClave] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useAutoAlert(10000);
+  const [error, setError] = useAutoAlert(10000);
   const [claveGenerada, setClaveGenerada] = useState('');
   const [claveActual, setClaveActual] = useState('');
   const [mostrarClaveActual, setMostrarClaveActual] = useState(false);

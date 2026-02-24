@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useAutoAlert from '../../hooks/useAutoAlert';
 import {
   Container, Typography, Card, CardContent, Box,
   Button, Dialog, DialogTitle, DialogContent, DialogActions,
@@ -17,8 +18,8 @@ const ConfiguracionAdmin = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [estadisticas, setEstadisticas] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useAutoAlert(10000);
+  const [error, setError] = useAutoAlert(10000);
   const [resultado, setResultado] = useState(null);
   
   // Estados para limpieza programada

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import useAutoAlert from '../../hooks/useAutoAlert';
 import RoleHeader from '../../components/RoleHeader';
 import {
   Typography, Container, Table, TableBody, TableCell, TableHead, TableRow,
@@ -56,8 +57,8 @@ const TesoreriaPage = () => {
   });
   const [filtroFecha, setFiltroFecha] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useAutoAlert(10000);
+  const [success, setSuccess] = useAutoAlert(10000);
   const [filtroHistorial, setFiltroHistorial] = useState('todos');
   const [openDetalleDialog, setOpenDetalleDialog] = useState(false);
   const [frecuenciaSeleccionada, setFrecuenciaSeleccionada] = useState(null);

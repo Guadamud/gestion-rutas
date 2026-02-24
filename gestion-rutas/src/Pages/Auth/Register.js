@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useAutoAlert from '../../hooks/useAutoAlert';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { professionalColors } from '../../utils/professionalColors';
@@ -43,7 +44,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("cliente");
-  const [error, setError] = useState("");
+  const [error, setError] = useAutoAlert(10000);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
