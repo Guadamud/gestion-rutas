@@ -331,13 +331,13 @@ const Home = () => {
           transition={{ duration: 0.8 }}
         >
           <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 1, md: 1.5 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 0 }}>
               <img
                 src={logoPajan}
                 alt="Logo Paján"
                 style={{
-                  width: 'clamp(180px, 22vw, 280px)',
-                  height: 'clamp(180px, 22vw, 280px)',
+                  width: 'clamp(240px, 28vw, 360px)',
+                  height: 'clamp(240px, 28vw, 360px)',
                   objectFit: 'contain'
                 }}
               />
