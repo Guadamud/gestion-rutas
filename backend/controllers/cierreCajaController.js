@@ -608,8 +608,8 @@ exports.obtenerSolicitudesAprobadas = async (req, res) => {
         return res.status(404).json({ error: "Cierre no encontrado" });
       }
       
-      // Si es admin o si es el propio usuario que hizo el cierre, permitir ver las solicitudes
-      if (userRol === 'admin' || cierre.cerradoPorId === userId) {
+      // Admin y tesoreria pueden ver cualquier cierre; otros roles solo los suyos
+      if (userRol === 'admin' || userRol === 'tesoreria' || cierre.cerradoPorId === userId) {
         whereCondition.incluidoEnCierreId = parseInt(cierre_id);
       } else {
         return res.status(403).json({ error: "No tienes permiso para ver este cierre" });
@@ -668,8 +668,8 @@ exports.obtenerCierrePorId = async (req, res) => {
     const { id } = req.params;
     const userRol = req.user.rol;
 
-    // Solo admin y tesorero pueden ver detalles
-    if (userRol !== "admin" && userRol !== "tesorero") {
+    // Solo admin y tesoreria pueden ver detalles
+    if (userRol !== "admin" && userRol !== "tesoreria") {
       return res.status(403).json({ 
         error: "No tienes permiso para ver detalles de cierres" 
       });
