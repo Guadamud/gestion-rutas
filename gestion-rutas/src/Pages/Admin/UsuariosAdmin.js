@@ -17,7 +17,9 @@ import {
   VerifiedUser,
   Delete,
   Add,
-  Edit
+  Edit,
+  NavigateBefore,
+  NavigateNext
 } from '@mui/icons-material';
 import axios from 'axios';
 import CustomSnackbar from '../../components/CustomSnackbar';
@@ -25,11 +27,13 @@ import CustomSnackbar from '../../components/CustomSnackbar';
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const UsuariosAdmin = () => {
+  const ITEMS_POR_PAGINA = 10;
   const [usuarios, setUsuarios] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(0);
 
   const [nuevoUsuario, setNuevoUsuario] = useState({
     nombres: '',
@@ -265,11 +269,22 @@ const UsuariosAdmin = () => {
     cargarUsuarios();
   }, []);
 
+  // Resetear a página 1 cuando cambia la búsqueda
+  useEffect(() => {
+    setPaginaActual(0);
+  }, [searchTerm]);
+
   const filteredUsuarios = usuarios.filter(usuario =>
     usuario.nombres?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     usuario.apellidos?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     usuario.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     usuario.cedula?.includes(searchTerm)
+  );
+
+  const totalPaginas = Math.ceil(filteredUsuarios.length / ITEMS_POR_PAGINA);
+  const usuariosPagina = filteredUsuarios.slice(
+    paginaActual * ITEMS_POR_PAGINA,
+    (paginaActual + 1) * ITEMS_POR_PAGINA
   );
 
   return (
@@ -453,11 +468,11 @@ const UsuariosAdmin = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredUsuarios.map((usuario, index) => (
+                  {usuariosPagina.map((usuario, index) => (
                     <TableRow key={usuario.id} hover>
                       <TableCell>
                         <Typography variant="body2" fontWeight="500">
-                          #{index + 1}
+                          #{paginaActual * ITEMS_POR_PAGINA + index + 1}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -541,6 +556,31 @@ const UsuariosAdmin = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <Box display="flex" alignItems="center" justifyContent="center" gap={2} py={2}>
+                <IconButton
+                  onClick={() => setPaginaActual(p => p - 1)}
+                  disabled={paginaActual === 0}
+                  size="small"
+                  sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}
+                >
+                  <NavigateBefore />
+                </IconButton>
+                <Typography variant="body2" color="text.secondary">
+                  Página {paginaActual + 1} de {totalPaginas} &nbsp;·&nbsp; {filteredUsuarios.length} usuarios
+                </Typography>
+                <IconButton
+                  onClick={() => setPaginaActual(p => p + 1)}
+                  disabled={paginaActual >= totalPaginas - 1}
+                  size="small"
+                  sx={{ backgroundColor: 'grey.100', '&:hover': { backgroundColor: 'grey.200' } }}
+                >
+                  <NavigateNext />
+                </IconButton>
+              </Box>
+            )}
           </CardContent>
         </Card>
 
