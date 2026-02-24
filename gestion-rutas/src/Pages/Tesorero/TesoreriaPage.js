@@ -1272,19 +1272,26 @@ const TesoreriaPage = () => {
     return fechaSol === fechaSeleccionada && !sol.incluidoEnCierreId;
   });
 
-  // Filtrar por día actual (UTC para ser consistente con timestamps guardados)
-  const fechaHoy = new Date().toISOString().split('T')[0];
+  // Fecha de hoy en hora local Ecuador (campo 'fecha' se guarda como fecha local, no UTC)
+  const fechaHoy = (() => {
+    const hoy = new Date();
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+  })();
   
-  // Combinar solicitudes pendientes con el historial para estadésticas del déa
+  // Combinar solicitudes pendientes con el historial para estadísticas del día
   const todasLasSolicitudes = [...solicitudes, ...historialSolicitudes];
   
-  // Si ya existe un cierre para hoy, mostrar ceros
-  // Mostrar todas las solicitudes del déa (el backend ya filtra las pendientes)
+  // Mostrar todas las solicitudes del día
   const solicitudesHoy = todasLasSolicitudes.filter(sol => {
-    const fechaStr = sol.fecha || sol.createdAt;
-    if (!fechaStr) return false;
-    const fechaSol = new Date(fechaStr).toISOString().split('T')[0];
-    return fechaSol === fechaHoy;
+    // 'fecha' es DATEONLY guardado como fecha local Ecuador → comparar string directo
+    if (sol.fecha) {
+      return String(sol.fecha).startsWith(fechaHoy);
+    }
+    // fallback con createdAt (UTC timestamp): convertir a fecha local
+    if (!sol.createdAt) return false;
+    const d = new Date(sol.createdAt);
+    const localStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return localStr === fechaHoy;
   });
 
   const frecuenciasHoy = frecuencias.filter(f => f.fecha === fechaHoy);
