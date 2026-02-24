@@ -48,6 +48,7 @@ import imgJipijapa from '../../assets/buses/cooperativa-jipijapa.jpg';
 import imgCaciqueGuale from '../../assets/buses/cooperativa-cacique-guale.jpg';
 import img15Octubre from '../../assets/buses/cooperativa-15-octubre.jpg';
 import img24Mayo from '../../assets/buses/24 de mayo.jpeg';
+import logoPajan from '../../assets/logo pajan.png';
 import imgSanJacinto from '../../assets/buses/San Jacinto Cotranscascol.jpg';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -331,16 +332,16 @@ const Home = () => {
         >
           <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, md: 3 } }}>
-              <Avatar
-                sx={{
-                  width: { xs: 60, sm: 70, md: 80 },
-                  height: { xs: 60, sm: 70, md: 80 },
-                  bgcolor: professionalColors.primary[500],
-                  mb: 2
+              <img
+                src={logoPajan}
+                alt="Logo Paján"
+                style={{
+                  width: 'clamp(80px, 12vw, 130px)',
+                  height: 'clamp(80px, 12vw, 130px)',
+                  objectFit: 'contain',
+                  marginBottom: 8
                 }}
-              >
-                <DirectionsBus sx={{ fontSize: { xs: 30, sm: 35, md: 40 } }} />
-              </Avatar>
+              />
             </Box>
 
             <Typography

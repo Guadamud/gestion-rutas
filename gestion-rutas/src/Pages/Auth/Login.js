@@ -25,9 +25,9 @@ import {
   Visibility,
   VisibilityOff,
   Login as LoginIcon,
-  DirectionsBus,
   PersonAdd
 } from "@mui/icons-material";
+import logoPajan from '../../assets/logo pajan.png';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -158,13 +158,14 @@ const Login = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: 2,
-                p: { xs: 1, sm: 1.5 },
                 mb: { xs: 1.5, sm: 2 }
               }}
             >
-              <DirectionsBus sx={{ fontSize: { xs: 28, sm: 32 } }} />
+              <img
+                src={logoPajan}
+                alt="Logo Paján"
+                style={{ width: 72, height: 72, objectFit: 'contain' }}
+              />
             </Box>
             <Typography 
               variant="h4" 
