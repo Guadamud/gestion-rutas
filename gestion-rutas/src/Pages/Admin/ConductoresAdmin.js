@@ -27,7 +27,8 @@ import {
   DialogContent,
   DialogActions,
   FormControl,
-  InputLabel
+  InputLabel,
+  Autocomplete
 } from '@mui/material';
 import {
   Person,
@@ -67,6 +68,7 @@ const ConductoresAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingConductor, setEditingConductor] = useState(null);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(0);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -245,6 +247,7 @@ const ConductoresAdmin = () => {
       clienteId: conductor.clienteId,
       saldo: conductor.saldo || 0
     });
+    setClienteSeleccionado(clientes.find(c => c.id === conductor.clienteId) || null);
     setEditingConductor(conductor);
     setOpenDialog(true);
   };
@@ -278,6 +281,7 @@ const ConductoresAdmin = () => {
       saldo: 0
     });
     setErrors({});
+    setClienteSeleccionado(null);
     setEditingConductor(null);
     setOpenDialog(true);
   };
@@ -285,6 +289,7 @@ const ConductoresAdmin = () => {
   const cerrarDialog = () => {
     setOpenDialog(false);
     setEditingConductor(null);
+    setClienteSeleccionado(null);
     setErrors({});
   };
 
@@ -699,36 +704,42 @@ const ConductoresAdmin = () => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl 
-                    fullWidth 
-                    required
-                    error={!!errors.clienteId}
-                  >
-                    <InputLabel shrink>Cliente</InputLabel>
-                    <Select
-                      value={formData.clienteId}
-                      onChange={(e) => {
-                        setFormData({ ...formData, clienteId: e.target.value });
-                        if (errors.clienteId) setErrors({ ...errors, clienteId: null });
-                      }}
-                      label="Cliente"
-                      displayEmpty
-                    >
-                      <MenuItem value="" disabled>
-                        <em>Seleccione un cliente</em>
-                      </MenuItem>
-                      {clientes.map((cliente) => (
-                        <MenuItem key={cliente.id} value={cliente.id}>
-                          {cliente.nombres} {cliente.apellidos}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.clienteId && (
-                      <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
-                        {errors.clienteId}
-                      </Typography>
+                  <Autocomplete
+                    options={clientes}
+                    value={clienteSeleccionado}
+                    onChange={(_, value) => {
+                      setClienteSeleccionado(value);
+                      setFormData({ ...formData, clienteId: value ? value.id : '' });
+                      if (errors.clienteId) setErrors({ ...errors, clienteId: null });
+                    }}
+                    getOptionLabel={(option) => `${option.nombres} ${option.apellidos}`}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.id}>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {option.nombres} {option.apellidos}
+                          </Typography>
+                          {option.email && (
+                            <Typography variant="caption" color="text.secondary">
+                              {option.email}
+                            </Typography>
+                          )}
+                        </Box>
+                      </li>
                     )}
-                  </FormControl>
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Cliente *"
+                        placeholder="Buscar cliente..."
+                        error={!!errors.clienteId}
+                        helperText={errors.clienteId}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                    )}
+                    noOptionsText="Sin resultados"
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth required error={!!errors.tipoLicencia}>
