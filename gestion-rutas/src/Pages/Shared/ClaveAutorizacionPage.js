@@ -141,7 +141,10 @@ const ClaveAutorizacionPage = () => {
           clave_nueva: claveNueva,
           password_admin: passwordAdmin,
           es_temporal: tipoClave === 'temporal',
-          fecha_expiracion: tipoClave === 'temporal' ? fechaExpiracion : null
+          // Convertir a ISO con timezone correcto: el input datetime-local no tiene zona horaria,
+          // new Date() en el navegador lo interpreta en hora local (Ecuador UTC-5),
+          // .toISOString() lo convierte a UTC real para que el servidor lo guarde correctamente.
+          fecha_expiracion: tipoClave === 'temporal' && fechaExpiracion ? new Date(fechaExpiracion).toISOString() : null
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
