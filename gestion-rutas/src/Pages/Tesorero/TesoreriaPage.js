@@ -1278,21 +1278,12 @@ const TesoreriaPage = () => {
     return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
   })();
   
-  // Combinar solicitudes pendientes con el historial para estadísticas del día
+  // Combinar solicitudes pendientes con el historial
   const todasLasSolicitudes = [...solicitudes, ...historialSolicitudes];
   
-  // Mostrar todas las solicitudes del día
-  const solicitudesHoy = todasLasSolicitudes.filter(sol => {
-    // 'fecha' es DATEONLY guardado como fecha local Ecuador → comparar string directo
-    if (sol.fecha) {
-      return String(sol.fecha).startsWith(fechaHoy);
-    }
-    // fallback con createdAt (UTC timestamp): convertir a fecha local
-    if (!sol.createdAt) return false;
-    const d = new Date(sol.createdAt);
-    const localStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    return localStr === fechaHoy;
-  });
+  // Solicitudes sin cierre asignado: misma lógica que usa el modal de cierre
+  // Así el resumen del panel siempre coincide con lo que se va a cerrar
+  const solicitudesHoy = todasLasSolicitudes.filter(sol => !sol.incluidoEnCierreId);
 
   const frecuenciasHoy = frecuencias.filter(f => f.fecha === fechaHoy);
 
@@ -1387,7 +1378,7 @@ const TesoreriaPage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h6" fontWeight="600" color="secondary" sx={{ display: 'flex', alignItems: 'center' }}>
             <TodayIcon sx={{ mr: 1 }} />
-            Resumen de Hoy
+            Resumen Pendiente de Cierre
           </Typography>
           {cierresHistorial.filter(c => c.fecha === fechaSeleccionada && c.cerradoPorId === userId).length > 0 && (
             <Chip 
@@ -1422,7 +1413,7 @@ const TesoreriaPage = () => {
                   {estadisticasHoy.total}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Total Solicitudes Hoy
+                  Total Sin Cerrar
                 </Typography>
               </Box>
             </CardContent>
@@ -1437,7 +1428,7 @@ const TesoreriaPage = () => {
                   {estadisticasHoy.pagados}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Aprobadas Hoy
+                  Aprobadas Sin Cerrar
                 </Typography>
               </Box>
             </CardContent>
@@ -1452,7 +1443,7 @@ const TesoreriaPage = () => {
                   {estadisticasHoy.pendientes}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Pendientes Hoy
+                  Pendientes Sin Aprobar
                 </Typography>
               </Box>
             </CardContent>
@@ -1482,7 +1473,7 @@ const TesoreriaPage = () => {
                   ${totalRecaudadoHoy.toFixed(2)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Total Recaudado Hoy
+                  Total Recaudado Sin Cerrar
                 </Typography>
               </Box>
             </CardContent>
