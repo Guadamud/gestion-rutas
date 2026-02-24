@@ -331,15 +331,14 @@ const Home = () => {
           transition={{ duration: 0.8 }}
         >
           <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, md: 3 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 1, md: 1.5 } }}>
               <img
                 src={logoPajan}
                 alt="Logo Paján"
                 style={{
-                  width: 'clamp(140px, 18vw, 220px)',
-                  height: 'clamp(140px, 18vw, 220px)',
-                  objectFit: 'contain',
-                  marginBottom: 8
+                  width: 'clamp(120px, 14vw, 180px)',
+                  height: 'clamp(120px, 14vw, 180px)',
+                  objectFit: 'contain'
                 }}
               />
             </Box>

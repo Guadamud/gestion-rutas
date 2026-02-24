@@ -148,7 +148,7 @@ const Login = () => {
             sx={{
               background: `linear-gradient(135deg, ${professionalColors.primary[500]} 0%, ${professionalColors.primary[600]} 100%)`,
               color: professionalColors.text.inverse,
-              py: { xs: 3, sm: 4 },
+              py: { xs: 2, sm: 2.5 },
               px: { xs: 2, sm: 3 },
               textAlign: 'center'
             }}
@@ -158,13 +158,13 @@ const Login = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mb: { xs: 1.5, sm: 2 }
+                mb: 1
               }}
             >
               <img
                 src={logoPajan}
                 alt="Logo Paján"
-                style={{ width: 130, height: 130, objectFit: 'contain' }}
+                style={{ width: 120, height: 120, objectFit: 'contain' }}
               />
             </Box>
             <Typography 
