@@ -89,18 +89,29 @@ const HistorialCompras = () => {
     const comprasFiltradas = filtrarPorMes(compras);
     const recargasFiltradas = filtrarPorMes(recargasConductores);
 
-    // Solo contar aprobadas en el total comprado
-    const soloAprobadas = comprasFiltradas.filter(t => t.estado === 'aprobada');
-    const total = soloAprobadas.reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
-    const ultima = soloAprobadas.length > 0 ? soloAprobadas[0] : null;
+    // Combinar todo para las tarjetas de resumen
+    const todasAprobadas = [
+      ...comprasFiltradas.filter(t => t.estado === 'aprobada'),
+      ...recargasFiltradas.filter(r => r.estado === 'aprobada' || r.estado === 'completada')
+    ];
+
+    const total = todasAprobadas.reduce((sum, t) => sum + parseFloat(t.monto || 0), 0);
+    const totalTransacciones = comprasFiltradas.length + recargasFiltradas.length;
+
+    // Última operación entre compras y recargas (la más reciente)
+    const todasOrdenadas = [
+      ...comprasFiltradas.filter(t => t.estado === 'aprobada'),
+      ...recargasFiltradas.filter(r => r.estado === 'aprobada' || r.estado === 'completada')
+    ].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const ultima = todasOrdenadas.length > 0 ? todasOrdenadas[0] : null;
 
     setEstadisticas({
       totalComprado: total,
-      totalTransacciones: comprasFiltradas.length,
+      totalTransacciones,
       ultimaCompra: ultima
     });
 
-    // Estadísticas de recargas de conductores
+    // Estadísticas de recargas de conductores (para uso futuro)
     const totalRecargas = recargasFiltradas.reduce((sum, r) => sum + parseFloat(r.monto || 0), 0);
     const ultimaRecarga = recargasFiltradas.length > 0 ? recargasFiltradas[0] : null;
 
