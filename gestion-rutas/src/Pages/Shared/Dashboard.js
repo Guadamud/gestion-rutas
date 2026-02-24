@@ -84,11 +84,12 @@ const Dashboard = () => {
           }))
         : [{ name: 'Sin datos', value: 1 }];
 
-      // Frecuencias de hoy
-      const hoy = new Date().toISOString().split('T')[0];
+      // Frecuencias de hoy (usar fecha local Ecuador, no UTC)
+      const hoyDate = new Date();
+      const hoy = `${hoyDate.getFullYear()}-${String(hoyDate.getMonth() + 1).padStart(2, '0')}-${String(hoyDate.getDate()).padStart(2, '0')}`;
       const frecuenciasHoy = frecuencias.filter(f => {
         if (!f.fecha) return false;
-        const fechaSalida = f.fecha.split('T')[0];
+        const fechaSalida = String(f.fecha).split('T')[0];
         return fechaSalida === hoy;
       }).length;
 
@@ -118,7 +119,7 @@ const Dashboard = () => {
           return {
             id: conductor.id,
             nombre: conductor.nombre || 'Sin nombre',
-            apellido: conductor.apellido || '',
+            apellido: '',,
             frecuencias: frecuenciasCond,
             estado: conductor.estado
           };
@@ -168,15 +169,15 @@ const Dashboard = () => {
       for (let i = 6; i >= 0; i--) {
         const fecha = new Date();
         fecha.setDate(fecha.getDate() - i);
-        const fechaStr = fecha.toISOString().split('T')[0];
+        const fechaStr = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
         const frecuenciasDia = frecuencias.filter(f => {
           if (!f.fecha) return false;
-          const fechaSalida = f.fecha.split('T')[0];
+          const fechaSalida = String(f.fecha).split('T')[0];
           return fechaSalida === fechaStr;
         }).length;
         const completadasDia = frecuencias.filter(f => {
           if (!f.fecha) return false;
-          const fechaSalida = f.fecha.split('T')[0];
+          const fechaSalida = String(f.fecha).split('T')[0];
           return fechaSalida === fechaStr && (f.estadoVerificacion === 'verificado' || f.estadoVerificacion === 'usado' || f.estado === 'completada' || f.estado === 'pagado');
         }).length;
         
@@ -646,7 +647,7 @@ const Dashboard = () => {
                       <ListItemText
                         primary={
                           <Typography fontWeight={index < 3 ? '600' : '500'} sx={{ fontSize: '0.9rem' }}>
-                            {conductor.nombre} {conductor.apellido}
+                            {conductor.nombre}
                           </Typography>
                         }
                         secondary={
