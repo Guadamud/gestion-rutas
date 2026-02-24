@@ -52,7 +52,7 @@ const RoleHeader = ({ rol, titulo, subtitulo }) => {
       sx={{
         background: config.gradient,
         color: 'white',
-        p: 3,
+        p: { xs: 2, sm: 3 },
         mb: 3,
         borderRadius: 3,
         position: 'relative',
@@ -79,38 +79,49 @@ const RoleHeader = ({ rol, titulo, subtitulo }) => {
         },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, position: 'relative', zIndex: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             bgcolor: 'rgba(255, 255, 255, 0.2)',
             borderRadius: 3,
-            p: 2,
+            p: { xs: 1.5, sm: 2 },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          {config.icon}
+          {React.cloneElement(config.icon, { sx: { fontSize: { xs: 32, sm: 50 } } })}
         </Box>
         
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-            <Typography variant="h4" fontWeight={700}>
-              {titulo || 'Panel de ' + config.label}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            sx={{
+              fontSize: { xs: '1.2rem', sm: '1.75rem', md: '2.125rem' },
+              lineHeight: 1.2,
+              mb: { xs: 0.5, sm: 1 },
+              wordBreak: 'break-word',
+            }}
+          >
+            {titulo || 'Panel de ' + config.label}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="body2" sx={{ opacity: 0.95, fontSize: { xs: '0.8rem', sm: '1rem' } }}>
+              {subtitulo || config.descripcion}
             </Typography>
             <Chip
               label={config.label.toUpperCase()}
+              size="small"
               sx={{
                 bgcolor: 'rgba(255, 255, 255, 0.3)',
                 color: 'white',
                 fontWeight: 600,
-                fontSize: '0.75rem',
+                fontSize: '0.7rem',
               }}
             />
           </Box>
-          <Typography variant="body1" sx={{ opacity: 0.95 }}>
-            {subtitulo || config.descripcion}
-          </Typography>
         </Box>
       </Box>
     </Paper>
