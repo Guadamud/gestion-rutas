@@ -119,7 +119,7 @@ const Dashboard = () => {
           return {
             id: conductor.id,
             nombre: conductor.nombre || 'Sin nombre',
-            apellido: '',,
+            apellido: '',
             frecuencias: frecuenciasCond,
             estado: conductor.estado
           };
