@@ -25,10 +25,7 @@ import {
   DialogActions,
   Fab,
   Tooltip,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
+  Autocomplete,
 } from '@mui/material';
 import {
   DirectionsBus,
@@ -67,6 +64,8 @@ const BusesAdmin = () => {
   const [modelo, setModelo] = useState('');
   const [numero, setNumero] = useState('');
   const [clienteId, setClienteId] = useState('');
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [cooperativaSeleccionada, setCooperativaSeleccionada] = useState(null);
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
@@ -159,9 +158,10 @@ const BusesAdmin = () => {
       setModelo('');
       setNumero('');
       setClienteId('');
+      setClienteSeleccionado(null);
+      setCooperativaSeleccionada(null);
       setEditId(null);
       setOpenDialog(false);
-    } catch (error) {
       console.error('Error al guardar bus:', error);
       mostrarAlerta(error.response?.data?.message || 'Error al guardar bus', 'error');
     }
@@ -174,6 +174,8 @@ const BusesAdmin = () => {
     setModelo(bus.modelo || '');
     setNumero(bus.numero || '');
     setClienteId(bus.usuarioId || '');
+    setClienteSeleccionado(clientes.find(c => c.id === bus.usuarioId) || null);
+    setCooperativaSeleccionada(cooperativas.find(c => c.nombre === (bus.empresa || '')) || null);
     setEditId(bus.id);
     setOpenDialog(true);
   };
@@ -185,6 +187,8 @@ const BusesAdmin = () => {
     setModelo('');
     setNumero('');
     setClienteId('');
+    setClienteSeleccionado(null);
+    setCooperativaSeleccionada(null);
     setEditId(null);
   };
 
@@ -660,52 +664,63 @@ const BusesAdmin = () => {
                 placeholder="Ej: Mercedes Benz OF-1721"
                 InputLabelProps={{ shrink: true }}
               />
-              <FormControl fullWidth required>
-                <InputLabel shrink>Cliente</InputLabel>
-                <Select
-                  value={clienteId}
-                  onChange={(e) => setClienteId(e.target.value)}
-                  label="Cliente"
-                  displayEmpty
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <Business />
-                    </InputAdornment>
-                  }
-                >
-                  <MenuItem value="" disabled>
-                    <em>Seleccione un cliente</em>
-                  </MenuItem>
-                  {clientes.map((cliente) => (
-                    <MenuItem key={cliente.id} value={cliente.id}>
-                      {cliente.nombres} {cliente.apellidos}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel shrink>Cooperativa</InputLabel>
-                <Select
-                  value={empresa}
-                  onChange={(e) => setEmpresa(e.target.value)}
-                  label="Cooperativa"
-                  displayEmpty
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <Business />
-                    </InputAdornment>
-                  }
-                >
-                  <MenuItem value="" disabled>
-                    <em>Seleccione una cooperativa</em>
-                  </MenuItem>
-                  {cooperativas.filter(c => c.estado === 'activo').map((coop) => (
-                    <MenuItem key={coop.id} value={coop.nombre}>
-                      {coop.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                options={clientes}
+                value={clienteSeleccionado}
+                onChange={(_, value) => {
+                  setClienteSeleccionado(value);
+                  setClienteId(value ? value.id : '');
+                }}
+                getOptionLabel={(option) => `${option.nombres} ${option.apellidos}`}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {option.nombres} {option.apellidos}
+                      </Typography>
+                      {option.email && (
+                        <Typography variant="caption" color="text.secondary">
+                          {option.email}
+                        </Typography>
+                      )}
+                    </Box>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Cliente *"
+                    placeholder="Buscar cliente..."
+                    InputLabelProps={{ shrink: true }}
+                  />
+                )}
+                noOptionsText="Sin resultados"
+              />
+              <Autocomplete
+                options={cooperativas.filter(c => c.estado === 'activo')}
+                value={cooperativaSeleccionada}
+                onChange={(_, value) => {
+                  setCooperativaSeleccionada(value);
+                  setEmpresa(value ? value.nombre : '');
+                }}
+                getOptionLabel={(option) => option.nombre}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.id}>
+                    <Typography variant="body2">{option.nombre}</Typography>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Cooperativa"
+                    placeholder="Buscar cooperativa..."
+                    InputLabelProps={{ shrink: true }}
+                  />
+                )}
+                noOptionsText="Sin resultados"
+              />
               <TextField
                 fullWidth
                 label="Capacidad"
