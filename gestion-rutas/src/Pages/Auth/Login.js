@@ -164,7 +164,7 @@ const Login = () => {
               <img
                 src={logoPajan}
                 alt="Logo Paján"
-                style={{ width: 72, height: 72, objectFit: 'contain' }}
+                style={{ width: 130, height: 130, objectFit: 'contain' }}
               />
             </Box>
             <Typography 

@@ -31,9 +31,9 @@ import {
   Visibility,
   VisibilityOff,
   PersonAdd,
-  DirectionsBus,
   ArrowBack
 } from "@mui/icons-material";
+import logoPajan from '../../assets/logo pajan.png';
 
 const Register = () => {
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -149,13 +149,14 @@ const Register = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: 2,
-                p: 1.5,
                 mb: 2
               }}
             >
-              <DirectionsBus sx={{ fontSize: 32 }} />
+              <img
+                src={logoPajan}
+                alt="Logo Paján"
+                style={{ width: 130, height: 130, objectFit: 'contain' }}
+              />
             </Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
               Únete al Sistema
